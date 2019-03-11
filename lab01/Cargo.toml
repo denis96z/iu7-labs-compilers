@@ -1,0 +1,7 @@
+[package]
+name = "lab01"
+version = "0.1.0"
+authors = ["denis"]
+edition = "2018"
+
+[dependencies]
