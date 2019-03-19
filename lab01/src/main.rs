@@ -1,6 +1,7 @@
-use std::env;
-
 mod fsm;
+
+use fsm::dfsm;
+use std::env;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -15,5 +16,5 @@ fn main() {
     let regex = args[1].clone() + "#";
     dbg!(&regex);
 
-    let dfsm = fsm::DFSM::from_regex(&regex);
+    let dfsm = dfsm::DFSM::from_regex(&regex).unwrap();
 }
