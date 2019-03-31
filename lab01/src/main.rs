@@ -1,4 +1,5 @@
 mod fsm;
+mod regexp;
 
 use fsm::dfsm;
 use std::env;
