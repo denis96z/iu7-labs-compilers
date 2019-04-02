@@ -3,6 +3,7 @@ use std::str::FromStr;
 
 pub mod error;
 
+#[derive(PartialEq, Debug)]
 pub struct RegExp {
     tree: BinTree<char>,
 }
@@ -33,7 +34,7 @@ impl FromStr for RegExp {
                             operations.push('.');
                         }
                     }
-                    _ => unreachable!(),
+                    _ => {}
                 }
                 operations.push(cur);
             } else if cur.is_alphabetic() {
@@ -52,7 +53,9 @@ impl FromStr for RegExp {
                             nodes.push(node);
                         }
                     }
-                    _ => unreachable!(),
+                    _ => {
+                        nodes.push(BinTree::from_element(cur));
+                    }
                 }
             } else if is_un_op(cur) {
                 match prev {
@@ -64,10 +67,15 @@ impl FromStr for RegExp {
                             return Err(Self::make_parse_err(&s, i));
                         }
                     }
-                    _ => unreachable!(),
+                    _ => return Err(Self::make_parse_err(&s, i)),
                 }
             } else if is_bin_op(cur) {
-                operations.push(cur);
+                match prev {
+                    Some(c) => {
+                        operations.push(cur);
+                    }
+                    _ => return Err(Self::make_parse_err(&s, i)),
+                }
             } else if cur == ')' {
                 let op = operations.pop().unwrap();
                 if op != '(' {
@@ -109,11 +117,13 @@ impl FromStr for RegExp {
     }
 }
 
+#[derive(PartialEq, Debug)]
 enum BinTree<T> {
     Empty,
     NonEmpty(Box<TreeNode<T>>),
 }
 
+#[derive(PartialEq, Debug)]
 struct TreeNode<T> {
     element: T,
     left: BinTree<T>,
@@ -136,6 +146,22 @@ impl<T> BinTree<T> {
             right,
         }))
     }
+
+    fn from_elements(element: T, left: T, right: T) -> Self {
+        BinTree::from(
+            element,
+            BinTree::from_element(left),
+            BinTree::from_element(right),
+        )
+    }
+
+    fn from_element_with_left(element: T, left: T) -> Self {
+        BinTree::from(element, BinTree::from_element(left), BinTree::Empty)
+    }
+
+    fn from_element_with_right(element: T, right: T) -> Self {
+        BinTree::from(element, BinTree::Empty, BinTree::from_element(right))
+    }
 }
 
 fn is_un_op(c: char) -> bool {
@@ -144,4 +170,26 @@ fn is_un_op(c: char) -> bool {
 
 fn is_bin_op(c: char) -> bool {
     c == '|' || c == '.'
+}
+
+#[test]
+fn test_regexp_from_str_simple() {
+    let cases = vec![
+        ("a", BinTree::from_element('a')),
+        ("(a)", BinTree::from_element('a')),
+        ("ab", BinTree::from_elements('.', 'a', 'b')),
+        ("a|b", BinTree::from_elements('|', 'a', 'b')),
+        ("a*", BinTree::from_element_with_left('*', 'a')),
+    ];
+
+    for case in cases {
+        println!("{:#?}", case);
+
+        match RegExp::from_str(case.0) {
+            Ok(r) => {
+                assert_eq!(r.tree, case.1);
+            }
+            _ => unreachable!(),
+        };
+    }
 }
