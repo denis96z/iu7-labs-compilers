@@ -183,8 +183,69 @@ fn test_regexp_from_str_simple() {
     ];
 
     for case in cases {
-        println!("{:#?}", case);
+        match RegExp::from_str(case.0) {
+            Ok(r) => {
+                assert_eq!(r.tree, case.1);
+            }
+            _ => unreachable!(),
+        };
+    }
+}
 
+#[test]
+fn test_regexp_from_str_complex() {
+    let cases = vec![
+        (
+            "a|b|c",
+            BinTree::from(
+                '|',
+                BinTree::from_elements('|', 'a', 'b'),
+                BinTree::from_element('c'),
+            ),
+        ),
+        (
+            "abc",
+            BinTree::from(
+                '.',
+                BinTree::from_elements('.', 'a', 'b'),
+                BinTree::from_element('c'),
+            ),
+        ),
+        (
+            "(a|b)(c|d)",
+            BinTree::from(
+                '.',
+                BinTree::from_elements('|', 'a', 'b'),
+                BinTree::from_elements('|', 'c', 'd'),
+            ),
+        ),
+        (
+            "(ab)(cd)",
+            BinTree::from(
+                '.',
+                BinTree::from_elements('.', 'a', 'b'),
+                BinTree::from_elements('.', 'c', 'd'),
+            ),
+        ),
+        (
+            "(ab)*",
+            BinTree::from('*', BinTree::from_elements('.', 'a', 'b'), BinTree::Empty),
+        ),
+        (
+            "((ab)*a)|(ab)",
+            BinTree::from(
+                '|',
+                BinTree::from(
+                    '.',
+                    BinTree::from('*', BinTree::from_elements('.', 'a', 'b'), BinTree::Empty),
+                    BinTree::from_element('a'),
+                ),
+                BinTree::from_elements('.', 'a', 'b'),
+            ),
+        ),
+    ];
+
+    for case in cases {
         match RegExp::from_str(case.0) {
             Ok(r) => {
                 assert_eq!(r.tree, case.1);
