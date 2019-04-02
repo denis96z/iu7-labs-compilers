@@ -77,9 +77,13 @@ impl FromStr for RegExp {
                     _ => return Err(Self::make_parse_err(&s, i)),
                 }
             } else if cur == ')' {
-                let op = operations.pop().unwrap();
-                if op != '(' {
-                    return Err(Self::make_parse_err(&s, i));
+                match operations.pop() {
+                    Some(op) => {
+                        if op != '(' {
+                            return Err(Self::make_parse_err(&s, i));
+                        }
+                    }
+                    _ => return Err(Self::make_parse_err(&s, i)),
                 }
             } else {
                 return Err(Self::make_parse_err(&s, i));
@@ -252,5 +256,22 @@ fn test_regexp_from_str_complex() {
             }
             _ => unreachable!(),
         };
+    }
+}
+
+#[test]
+fn test_regexp_from_str_error() {
+    let cases = vec![
+        ("a**", RegExp::make_parse_err("a**", 2)),
+        (")", RegExp::make_parse_err(")", 0)),
+    ];
+
+    for case in cases {
+        match RegExp::from_str(case.0) {
+            Err(e) => {
+                assert_eq!(e, case.1);
+            }
+            _ => unreachable!(),
+        }
     }
 }
