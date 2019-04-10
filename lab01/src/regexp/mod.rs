@@ -187,6 +187,8 @@ fn test_regexp_from_str_simple() {
     ];
 
     for case in cases {
+        info!("Test case {:#?}", case);
+
         match RegExp::from_str(case.0) {
             Ok(r) => {
                 assert_eq!(r.tree, case.1);
@@ -250,6 +252,8 @@ fn test_regexp_from_str_complex() {
     ];
 
     for case in cases {
+        info!("Test case {:#?}", case);
+
         match RegExp::from_str(case.0) {
             Ok(r) => {
                 assert_eq!(r.tree, case.1);
@@ -267,6 +271,8 @@ fn test_regexp_from_str_error() {
     ];
 
     for case in cases {
+        info!("Test case {:#?}", case);
+
         match RegExp::from_str(case.0) {
             Err(e) => {
                 assert_eq!(e, case.1);

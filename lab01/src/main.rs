@@ -1,3 +1,6 @@
+#[macro_use]
+extern crate log;
+
 mod fsm;
 mod regexp;
 
