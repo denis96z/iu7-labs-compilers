@@ -1,6 +1,6 @@
-### Cargo ###
-/target
-**/*.rs.bk
-
 ### IDE ###
 .idea
+
+### cargo ###
+/target
+**/*.rs.bk
