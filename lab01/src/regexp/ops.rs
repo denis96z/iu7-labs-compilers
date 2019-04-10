@@ -1,3 +1,4 @@
+use super::error::ParseExpError;
 use super::types;
 use std::error::Error;
 use std::str::FromStr;
@@ -52,7 +53,7 @@ impl PartialOrd for Operator {
 }
 
 impl FromStr for Operator {
-    type Err = ParseOperatorError;
+    type Err = ParseExpError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
@@ -74,35 +75,8 @@ impl FromStr for Operator {
                 associativity: Associativity::Right,
             }),
 
-            _ => Err(ParseOperatorError::new(0)),
+            _ => Err(ParseExpError::new(0)),
         }
-    }
-}
-
-#[derive(Eq, PartialEq, Clone, Debug)]
-pub struct ParseOperatorError {
-    index: usize,
-}
-
-impl ParseOperatorError {
-    fn new(index: usize) -> Self {
-        ParseOperatorError { index }
-    }
-}
-
-impl fmt::Display for ParseOperatorError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}. index: {}", self.description(), self.index)
-    }
-}
-
-impl error::Error for ParseOperatorError {
-    fn description(&self) -> &str {
-        "invalid character"
-    }
-
-    fn cause(&self) -> Option<&error::Error> {
-        None
     }
 }
 

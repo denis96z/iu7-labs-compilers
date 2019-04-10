@@ -1,22 +1,23 @@
+use super::{ops, vals};
 use crate::tree::{BinTree, TreeNode};
+use std::error::Error;
+use std::{error, fmt};
+
+#[derive(Debug)]
+enum Symbol {
+    Value(vals::Value),
+    Operator(ops::Operator),
+}
 
 #[derive(PartialEq, Debug)]
-pub struct AST {
+pub struct AbstractSyntaxTree {
     root: BinTree<char>,
 }
 
-impl AST {
+impl AbstractSyntaxTree {
     pub fn new() -> Self {
-        AST {
+        AbstractSyntaxTree {
             root: BinTree::new(),
         }
     }
-
-    pub fn from_regexp() -> Self {
-        unimplemented!()
-    }
 }
-
-struct AstNode(TreeNode<char>);
-
-impl AstNode {}
