@@ -1,25 +1,26 @@
+use super::types;
 use std::error::Error;
 use std::str::FromStr;
 use std::{cmp, error, fmt};
 
-type Symbol = char;
-type Priority = u8;
+#[derive(Eq, PartialEq, Ord, PartialOrd, Copy, Clone, Debug)]
+pub struct Priority(u8);
 
 #[derive(PartialEq, Copy, Clone, Debug)]
-enum Associativity {
+pub enum Associativity {
     Left,
     Right,
 }
 
 #[derive(Clone, Debug)]
 pub struct Operator {
-    symbol: Symbol,
+    symbol: types::Symbol,
     priority: Priority,
     associativity: Associativity,
 }
 
 impl Operator {
-    pub fn symbol(&self) -> Symbol {
+    pub fn symbol(&self) -> types::Symbol {
         self.symbol
     }
 
@@ -57,19 +58,19 @@ impl FromStr for Operator {
         match s {
             "|" => Ok(Operator {
                 symbol: s.chars().next().unwrap(),
-                priority: 1,
+                priority: Priority(1),
                 associativity: Associativity::Left,
             }),
 
             "." => Ok(Operator {
                 symbol: s.chars().next().unwrap(),
-                priority: 2,
+                priority: Priority(2),
                 associativity: Associativity::Left,
             }),
 
             "*" => Ok(Operator {
                 symbol: s.chars().next().unwrap(),
-                priority: 3,
+                priority: Priority(3),
                 associativity: Associativity::Right,
             }),
 
