@@ -127,28 +127,17 @@ enum BinTree<T> {
     NonEmpty(Box<TreeNode<T>>),
 }
 
-#[derive(PartialEq, Debug)]
-struct TreeNode<T> {
-    element: T,
-    left: BinTree<T>,
-    right: BinTree<T>,
-}
-
 impl<T> BinTree<T> {
-    fn from_element(element: T) -> Self {
-        BinTree::NonEmpty(Box::new(TreeNode {
-            element,
-            left: BinTree::Empty,
-            right: BinTree::Empty,
-        }))
-    }
-
     fn from(element: T, left: BinTree<T>, right: BinTree<T>) -> Self {
         BinTree::NonEmpty(Box::new(TreeNode {
             element,
             left,
             right,
         }))
+    }
+
+    fn from_element(element: T) -> Self {
+        BinTree::NonEmpty(Box::new(TreeNode::new(element)))
     }
 
     fn from_elements(element: T, left: T, right: T) -> Self {
@@ -165,6 +154,23 @@ impl<T> BinTree<T> {
 
     fn from_element_with_right(element: T, right: T) -> Self {
         BinTree::from(element, BinTree::Empty, BinTree::from_element(right))
+    }
+}
+
+#[derive(PartialEq, Debug)]
+struct TreeNode<T> {
+    element: T,
+    left: BinTree<T>,
+    right: BinTree<T>,
+}
+
+impl<T> TreeNode<T> {
+    fn new(element: T) -> Self {
+        TreeNode {
+            element,
+            left: BinTree::Empty,
+            right: BinTree::Empty,
+        }
     }
 }
 
