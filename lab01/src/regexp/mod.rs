@@ -155,6 +155,13 @@ impl<T> BinTree<T> {
     fn from_element_with_right(element: T, right: T) -> Self {
         BinTree::from(element, BinTree::Empty, BinTree::from_element(right))
     }
+
+    fn is_nullable(&self) -> bool {
+        match *self {
+            BinTree::Empty => true,
+            _ => false,
+        }
+    }
 }
 
 #[derive(PartialEq, Debug)]
@@ -171,6 +178,43 @@ impl<T> TreeNode<T> {
             left: BinTree::Empty,
             right: BinTree::Empty,
         }
+    }
+}
+
+fn is_nullable(node: &TreeNode<char>) -> bool {
+    match node.element {
+        '|' => node.left.is_nullable() || node.right.is_nullable(),
+        '.' => node.left.is_nullable() && node.right.is_nullable(),
+        '*' => true,
+        _ => false,
+    }
+}
+
+fn first_pos(node: &TreeNode<char>) -> Vec<char> {
+    match node.element {
+        '|' => {
+            let mut left = match &node.left {
+                BinTree::NonEmpty(left) => first_pos(&left),
+                _ => Vec::new(),
+            };
+
+            let mut right = match &node.right {
+                BinTree::NonEmpty(right) => first_pos(&right),
+                _ => Vec::new(),
+            };
+
+            left.append(&mut right);
+            left
+        }
+
+        '.' => !unimplemented!(), //TODO
+
+        '*' => match &node.left {
+            BinTree::NonEmpty(left) => first_pos(&left),
+            _ => unreachable!(),
+        },
+
+        _ => vec![node.element],
     }
 }
 
