@@ -92,13 +92,13 @@ impl ParseOperatorError {
 
 impl fmt::Display for ParseOperatorError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{} at {}", self.description(), self.index)
+        write!(f, "{}. index: {}", self.description(), self.index)
     }
 }
 
 impl error::Error for ParseOperatorError {
     fn description(&self) -> &str {
-        "invalid first item to double"
+        "invalid character"
     }
 
     fn cause(&self) -> Option<&error::Error> {
