@@ -3,6 +3,7 @@ use std::error::Error;
 use std::str::FromStr;
 use std::{cmp, error, fmt};
 
+#[derive(Copy, Clone, Debug)]
 struct Value {
     symbol: types::Symbol,
 }
