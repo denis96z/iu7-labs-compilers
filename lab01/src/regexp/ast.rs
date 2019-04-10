@@ -1,7 +1,11 @@
-use super::{ops, vals};
-use crate::tree::{BinTree, TreeNode};
 use std::error::Error;
+use std::str::FromStr;
 use std::{error, fmt};
+
+use crate::tree::{BinTree, TreeNode};
+
+use super::error::ParseExpError;
+use super::{ops, vals};
 
 #[derive(Debug)]
 enum Symbol {
@@ -19,5 +23,13 @@ impl AbstractSyntaxTree {
         AbstractSyntaxTree {
             root: BinTree::new(),
         }
+    }
+}
+
+impl FromStr for AbstractSyntaxTree {
+    type Err = ParseExpError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        unimplemented!()
     }
 }

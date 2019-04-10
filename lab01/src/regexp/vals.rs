@@ -1,8 +1,9 @@
-use super::error::ParseExpError;
-use super::types;
 use std::error::Error;
 use std::str::FromStr;
 use std::{cmp, error, fmt};
+
+use super::error::ParseExpError;
+use super::types;
 
 #[derive(Copy, Clone, Debug)]
 pub struct Value {
@@ -58,6 +59,7 @@ fn test_value_from_str() {
     assert_eq!(Value::from_str("abc").is_err(), true);
 }
 
+#[test]
 fn test_value_cmp() {
     let (s1, s2) = ("a", "b");
 

@@ -1,8 +1,9 @@
-use super::error::ParseExpError;
-use super::types;
 use std::error::Error;
 use std::str::FromStr;
 use std::{cmp, error, fmt};
+
+use super::error::ParseExpError;
+use super::types;
 
 #[derive(Eq, PartialEq, Ord, PartialOrd, Copy, Clone, Debug)]
 pub struct Priority(u8);
