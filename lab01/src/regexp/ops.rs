@@ -104,10 +104,32 @@ impl FromStr for Operator {
     }
 }
 
-#[inline(always)]
 pub fn is_operator(s: &str) -> bool {
-    let operators = vec!["|", ".", "*", "(", ")"];
-    operators.contains(&s)
+    vec!["|", ".", "*", "(", ")"].contains(&s)
+}
+
+pub fn is_unary_operator(s: &str) -> bool {
+    vec!["*"].contains(&s)
+}
+
+pub fn is_binary_operator(s: &str) -> bool {
+    vec!["|", "."].contains(&s)
+}
+
+pub fn is_opening_parenthesis(s: &str) -> bool {
+    s == "("
+}
+
+pub fn is_closing_parenthesis(s: &str) -> bool {
+    s == ")"
+}
+
+pub fn is_left_associative(operator: &Operator) -> bool {
+    operator.associativity == Associativity::Left
+}
+
+pub fn is_right_associative(operator: &Operator) -> bool {
+    operator.associativity == Associativity::Right
 }
 
 #[test]

@@ -39,52 +39,45 @@ fn make_rpn(s: &str) -> VecDeque<Symbol> {
     let mut ops_stack: Vec<ops::Operator> = Vec::new();
     let mut exp_queue: VecDeque<Symbol> = VecDeque::with_capacity(s.len());
 
-    let h = |c: char| -> Result<(), ()> {
-        if c == ops::Operator::OPENING_PARENTHESIS {
-            let r = ops::Operator::from_str(&c.to_string()).unwrap();
-            ops_stack.push(r);
-        } else if c == ops::Operator::CLOSING_PARENTHESIS {
-            while !ops_stack.is_empty() {
-                let op = ops_stack.pop().unwrap();
-                if op.symbol() == ops::Operator::OPENING_PARENTHESIS {
-                    break;
-                }
-                exp_queue.push_back(Symbol::Operator(op));
-            }
-        }
+    let mut h = |s: &str| {
+        if ops::is_operator(s) {
+            let operator = ops::Operator::from_str(s).unwrap();
 
-        match vals::Value::from_str(&c.to_string()) {
-            Ok(value) => {
-                exp_queue.push_back(Symbol::Value(value));
-                return Ok(());
-            }
-            _ => {}
-        }
-
-        match ops::Operator::from_str(&c.to_string()) {
-            Ok(operator) => {
+            if operator.is_opening_parenthesis() {
+                ops_stack.push(operator);
+            } else if operator.is_closing_parenthesis() {
                 while !ops_stack.is_empty() {
-                    let top_operator = ops_stack.last().unwrap();
-                    if top_operator.is_opening_parenthesis() {
+                    let top = ops_stack.pop().unwrap();
+                    if top.symbol() == ops::Operator::OPENING_PARENTHESIS {
+                        break;
+                    }
+                    exp_queue.push_back(Symbol::Operator(top));
+                }
+            } else {
+                let mut flag = true;
+
+                while !ops_stack.is_empty() && flag {
+                    let top = ops_stack.last().unwrap();
+                    if top.is_opening_parenthesis() {
                         break;
                     }
 
-                    let left_cond = operator.associativity() == ops::Associativity::Left
-                        && operator <= *top_operator;
-                    let right_cond = operator.associativity() == ops::Associativity::Right
-                        && operator < *top_operator;
+                    let left_cond = ops::is_left_associative(&operator) && operator <= *top;
+                    let right_cond = ops::is_right_associative(&operator) && operator < *top;
 
                     if left_cond || right_cond {
                         exp_queue.push_back(Symbol::Operator(ops_stack.pop().unwrap()));
+                    } else {
+                        flag = false;
                     }
                 }
 
-                return Ok(());
-            }
-            _ => {}
-        }
-
-        Err(())
+                ops_stack.push(operator);
+            };
+        } else if vals::is_value(s) {
+            let value = vals::Value::from_str(s).unwrap();
+            exp_queue.push_back(Symbol::Value(value));
+        };
     };
 
     let mut prev = '\0';
@@ -92,11 +85,32 @@ fn make_rpn(s: &str) -> VecDeque<Symbol> {
         let cur_str = &cur.to_string();
 
         if vals::is_value(cur_str) {
-            //TODO handle value
+            let prev_str = &prev.to_string();
+
+            if vals::is_value(prev_str)
+                || ops::is_unary_operator(prev_str)
+                || ops::is_closing_parenthesis(prev_str)
+            {
+                h(".");
+            }
+
+            h(cur_str);
         } else if ops::is_operator(cur_str) {
-            //TODO handle operator
+            h(cur_str);
         } else {
             unimplemented!(); //TODO handle error
+        }
+
+        prev = cur;
+    }
+
+    while !ops_stack.is_empty() {
+        let top = ops_stack.pop().unwrap();
+
+        if top.is_opening_parenthesis() {
+            unimplemented!() //TODO handle error
+        } else {
+            exp_queue.push_back(Symbol::Operator(top));
         }
     }
 

@@ -33,7 +33,7 @@ impl FromStr for Value {
             Err(ParseExpError::new(1))
         } else {
             let c = s.chars().next().unwrap();
-            if c.is_alphabetic() {
+            if is_value(&s.to_string()) {
                 Ok(Value::new(c))
             } else {
                 Err(ParseExpError::new(0))
@@ -54,7 +54,6 @@ impl PartialOrd for Value {
     }
 }
 
-#[inline(always)]
 pub fn is_value(s: &str) -> bool {
     for c in s.chars() {
         if !c.is_alphabetic() && c != Value::EMPTY && c != Value::SPECIAL {
