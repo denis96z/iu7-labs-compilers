@@ -22,12 +22,23 @@ pub struct Operator {
 }
 
 impl Operator {
+    pub const OPENING_PARENTHESIS: types::Symbol = '(';
+    pub const CLOSING_PARENTHESIS: types::Symbol = ')';
+
     pub fn symbol(&self) -> types::Symbol {
         self.symbol
     }
 
     pub fn associativity(&self) -> Associativity {
         self.associativity
+    }
+
+    pub fn is_opening_parenthesis(&self) -> bool {
+        self.symbol == Self::OPENING_PARENTHESIS
+    }
+
+    pub fn is_closing_parenthesis(&self) -> bool {
+        self.symbol == Self::CLOSING_PARENTHESIS
     }
 }
 
@@ -76,9 +87,27 @@ impl FromStr for Operator {
                 associativity: Associativity::Right,
             }),
 
+            "(" => Ok(Operator {
+                symbol: s.chars().next().unwrap(),
+                priority: Priority(0),
+                associativity: Associativity::Left,
+            }),
+
+            ")" => Ok(Operator {
+                symbol: s.chars().next().unwrap(),
+                priority: Priority(0),
+                associativity: Associativity::Left,
+            }),
+
             _ => Err(ParseExpError::new(0)),
         }
     }
+}
+
+#[inline(always)]
+pub fn is_operator(s: &str) -> bool {
+    let operators = vec!["|", ".", "*", "(", ")"];
+    operators.contains(&s)
 }
 
 #[test]
@@ -86,6 +115,8 @@ fn test_operator_from_str() {
     assert_eq!(Operator::from_str("|").is_ok(), true);
     assert_eq!(Operator::from_str(".").is_ok(), true);
     assert_eq!(Operator::from_str("*").is_ok(), true);
+    assert_eq!(Operator::from_str("(").is_ok(), true);
+    assert_eq!(Operator::from_str(")").is_ok(), true);
     assert_eq!(Operator::from_str("").is_err(), true);
 }
 

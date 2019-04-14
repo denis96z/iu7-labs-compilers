@@ -11,6 +11,9 @@ pub struct Value {
 }
 
 impl Value {
+    pub const EMPTY: types::Symbol = 'ε';
+    pub const SPECIAL: types::Symbol = '#';
+
     fn new(symbol: types::Symbol) -> Self {
         Value { symbol }
     }
@@ -24,7 +27,7 @@ impl FromStr for Value {
     type Err = ParseExpError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        if s.len() < 1 {
+        if s.is_empty() {
             Err(ParseExpError::new(0))
         } else if s.len() > 1 {
             Err(ParseExpError::new(1))
@@ -49,6 +52,16 @@ impl PartialOrd for Value {
     fn partial_cmp(&self, other: &Self) -> Option<cmp::Ordering> {
         self.symbol.partial_cmp(&other.symbol)
     }
+}
+
+#[inline(always)]
+pub fn is_value(s: &str) -> bool {
+    for c in s.chars() {
+        if !c.is_alphabetic() && c != Value::EMPTY && c != Value::SPECIAL {
+            return false;
+        }
+    }
+    true
 }
 
 #[test]
