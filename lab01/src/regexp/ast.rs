@@ -78,8 +78,10 @@ fn make_rpn(s: &str) -> Result<Queue<Symbol>, errs::ParseExpError> {
                         break;
                     }
 
-                    let left_cond = ops::is_left_associative(&operator) && operator <= *top;
-                    let right_cond = ops::is_right_associative(&operator) && operator < *top;
+                    let left_cond =
+                        operator.associativity() == ops::Associativity::Left && operator <= *top;
+                    let right_cond =
+                        operator.associativity() == ops::Associativity::Right && operator < *top;
 
                     if left_cond || right_cond {
                         symbols.push_back(Symbol::Operator(operators.pop().unwrap()));

@@ -159,14 +159,6 @@ pub fn is_closing_parenthesis(s: &str) -> bool {
     s == CLOSING_PARENTHESIS.symbol
 }
 
-pub fn is_left_associative(operator: &Operator) -> bool {
-    operator.associativity == Associativity::Left
-}
-
-pub fn is_right_associative(operator: &Operator) -> bool {
-    operator.associativity == Associativity::Right
-}
-
 mod tests {
     use super::*;
 
