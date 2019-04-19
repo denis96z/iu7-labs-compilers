@@ -164,6 +164,18 @@ fn make_tree(symbols: &Queue<Symbol>) -> Result<tree::BinTree<Symbol>, errs::Par
     Ok(stack.pop().unwrap())
 }
 
+#[derive(PartialEq, Eq, Debug)]
+struct Params {
+    pub is_nullable: bool,
+    pub first_pos: Vec<usize>,
+    pub last_pos: Vec<usize>,
+    pub follow_pos: Vec<usize>,
+}
+
+fn make_params_tree(tree: &tree::BinTree<Symbol>) -> tree::BinTree<Params> {
+    unimplemented!()
+}
+
 mod tests {
     use super::*;
 
