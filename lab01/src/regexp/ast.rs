@@ -45,7 +45,9 @@ impl FromStr for AbstractSyntaxTree {
     type Err = errs::ParseExpError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        unimplemented!()
+        Ok(AbstractSyntaxTree {
+            root: make_tree(&make_rpn(s)?)?,
+        })
     }
 }
 
@@ -164,6 +166,20 @@ fn make_tree(symbols: &Queue<Symbol>) -> Result<tree::BinTree<Symbol>, errs::Par
 
 mod tests {
     use super::*;
+
+    #[test]
+    fn tree_new() {
+        AbstractSyntaxTree::new();
+    }
+
+    #[test]
+    fn tree_from_str() {
+        let cases = vec!["((a|b)*abb)#"];
+
+        for case in cases {
+            AbstractSyntaxTree::from_str(case).unwrap();
+        }
+    }
 
     #[test]
     fn make_rpn() {
