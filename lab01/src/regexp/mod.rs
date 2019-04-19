@@ -1,7 +1,7 @@
 use std::str::FromStr;
 
 pub mod ast;
-pub mod error;
+pub mod errs;
 pub mod ops;
 pub mod types;
 pub mod vals;
@@ -23,7 +23,7 @@ impl RegExp {
 }
 
 impl FromStr for RegExp {
-    type Err = error::ParseExpError;
+    type Err = errs::ParseExpError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         Ok(RegExp {

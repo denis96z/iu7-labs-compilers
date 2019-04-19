@@ -2,7 +2,7 @@ use std::error::Error;
 use std::str::FromStr;
 use std::{cmp, error, fmt};
 
-use super::error::ParseExpError;
+use super::errs::ParseExpError;
 use super::types;
 
 #[derive(Clone, Copy, Debug)]

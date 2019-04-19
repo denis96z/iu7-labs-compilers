@@ -5,7 +5,7 @@ use std::{error, fmt};
 
 use crate::tree::{BinTree, TreeNode};
 
-use super::error::ParseExpError;
+use super::errs::ParseExpError;
 use super::{ops, vals};
 
 type Stack<T> = Vec<T>;
