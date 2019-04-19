@@ -1,3 +1,4 @@
+use std::collections::HashSet;
 use std::collections::VecDeque;
 use std::error::Error;
 use std::str::FromStr;
@@ -6,7 +7,6 @@ use crate::tree;
 
 use super::errs;
 use super::{ops, vals};
-use std::collections::btree_set::BTreeSet;
 
 #[derive(PartialEq, Clone, Debug)]
 pub struct AbstractSyntaxTree {
@@ -51,7 +51,7 @@ impl Symbol {
 
 type Stack<T> = Vec<T>;
 type Queue<T> = std::collections::VecDeque<T>;
-type Set<T> = std::collections::BTreeSet<T>;
+type Set<T> = std::collections::HashSet<T>;
 
 fn make_rpn(s: &str) -> Result<Queue<Symbol>, errs::ParseExpError> {
     let mut operators = Stack::new();
