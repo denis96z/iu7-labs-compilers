@@ -1,7 +1,7 @@
 use std::error::Error;
 use std::{error, fmt};
 
-#[derive(Eq, PartialEq, Clone, Debug)]
+#[derive(PartialEq, Eq, Clone, Debug)]
 pub struct ParseExpError {
     index: usize,
     message: String,
