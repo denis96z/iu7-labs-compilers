@@ -29,8 +29,6 @@ impl FromStr for Value {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         if s.is_empty() {
             Err(errs::ParseExpError::new(0))
-        } else if s.len() > 1 {
-            Err(errs::ParseExpError::new(1))
         } else {
             if is_value(s) {
                 Ok(Value {
@@ -76,7 +74,6 @@ mod tests {
         assert_eq!(Value::from_str("a").is_ok(), true);
         assert_eq!(Value::from_str("&").is_err(), true);
         assert_eq!(Value::from_str("").is_err(), true);
-        assert_eq!(Value::from_str("abc").is_err(), true);
     }
 
     #[test]
