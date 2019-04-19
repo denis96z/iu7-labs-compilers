@@ -29,9 +29,9 @@ impl Symbol {
     }
 }
 
-#[derive(PartialEq, Debug)]
+#[derive(PartialEq, Clone, Debug)]
 pub struct AbstractSyntaxTree {
-    root: BinTree<char>,
+    root: BinTree<Symbol>,
 }
 
 impl AbstractSyntaxTree {
