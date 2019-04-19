@@ -56,6 +56,10 @@ pub const UNARY_OPERATORS: [&'static Operator; 1] = [&ITERATION];
 pub const BINARY_OPERATORS: [&'static Operator; 2] = [&CONCATENATION, &COMBINATION];
 
 impl Operator {
+    pub fn from_valid_str(s: &str) -> Self {
+        Self::from_str(s).unwrap()
+    }
+
     pub fn symbol(&self) -> types::SymbolRef {
         self.symbol
     }

@@ -109,7 +109,7 @@ fn make_rpn(s: &str) -> Result<Queue<Symbol>, errs::ParseExpError> {
                 || ops::is_unary_operator(prev_str)
                 || ops::is_closing_parenthesis(prev_str)
             {
-                h(".");
+                h(ops::CONCATENATION.symbol());
             }
 
             h(cur_str);
@@ -223,13 +223,13 @@ mod tests {
                 vec![
                     Symbol::from_value_str("a").unwrap(),
                     Symbol::from_value_str("b").unwrap(),
-                    Symbol::from_operator_str("|").unwrap(),
+                    Symbol::Operator(ops::COMBINATION),
                     Symbol::from_value_str("c").unwrap(),
-                    Symbol::from_operator_str(".").unwrap(),
+                    Symbol::Operator(ops::CONCATENATION),
                     Symbol::from_value_str("d").unwrap(),
-                    Symbol::from_operator_str("|").unwrap(),
-                    Symbol::from_value_str("#").unwrap(),
-                    Symbol::from_operator_str(".").unwrap(),
+                    Symbol::Operator(ops::COMBINATION),
+                    Symbol::from_value_str(vals::Value::SPECIAL).unwrap(),
+                    Symbol::Operator(ops::CONCATENATION),
                 ]
                 .into_iter()
                 .collect::<Queue<_>>(),
@@ -238,15 +238,15 @@ mod tests {
                 "(a*b|cd)#",
                 vec![
                     Symbol::from_value_str("a").unwrap(),
-                    Symbol::from_operator_str("*").unwrap(),
+                    Symbol::Operator(ops::ITERATION),
                     Symbol::from_value_str("b").unwrap(),
-                    Symbol::from_operator_str(".").unwrap(),
+                    Symbol::Operator(ops::CONCATENATION),
                     Symbol::from_value_str("c").unwrap(),
                     Symbol::from_value_str("d").unwrap(),
-                    Symbol::from_operator_str(".").unwrap(),
-                    Symbol::from_operator_str("|").unwrap(),
-                    Symbol::from_value_str("#").unwrap(),
-                    Symbol::from_operator_str(".").unwrap(),
+                    Symbol::Operator(ops::CONCATENATION),
+                    Symbol::Operator(ops::COMBINATION),
+                    Symbol::from_value_str(vals::Value::SPECIAL).unwrap(),
+                    Symbol::Operator(ops::CONCATENATION),
                 ]
                 .into_iter()
                 .collect::<Queue<_>>(),
@@ -263,26 +263,26 @@ mod tests {
         let cases = vec![(
             vec![
                 Symbol::from_value_str("a").unwrap(),
-                Symbol::from_operator_str("*").unwrap(),
+                Symbol::Operator(ops::ITERATION),
                 Symbol::from_value_str("b").unwrap(),
-                Symbol::from_operator_str(".").unwrap(),
+                Symbol::Operator(ops::CONCATENATION),
                 Symbol::from_value_str("c").unwrap(),
                 Symbol::from_value_str("d").unwrap(),
-                Symbol::from_operator_str(".").unwrap(),
-                Symbol::from_operator_str("|").unwrap(),
-                Symbol::from_value_str("#").unwrap(),
-                Symbol::from_operator_str(".").unwrap(),
+                Symbol::Operator(ops::CONCATENATION),
+                Symbol::Operator(ops::COMBINATION),
+                Symbol::from_value_str(vals::Value::SPECIAL).unwrap(),
+                Symbol::Operator(ops::CONCATENATION),
             ]
             .into_iter()
             .collect::<Queue<_>>(),
             tree::BinTree::from(
-                TreeNode(10, Symbol::from_operator_str(".").unwrap()),
+                TreeNode(10, Symbol::Operator(ops::CONCATENATION)),
                 tree::BinTree::from(
-                    TreeNode(8, Symbol::from_operator_str("|").unwrap()),
+                    TreeNode(8, Symbol::Operator(ops::COMBINATION)),
                     tree::BinTree::from(
-                        TreeNode(4, Symbol::from_operator_str(".").unwrap()),
+                        TreeNode(4, Symbol::Operator(ops::CONCATENATION)),
                         tree::BinTree::from_element_with_left(
-                            TreeNode(2, Symbol::from_operator_str("*").unwrap()),
+                            TreeNode(2, Symbol::Operator(ops::ITERATION)),
                             TreeNode(1, Symbol::from_value_str("a").unwrap()),
                         ),
                         tree::BinTree::from_element(TreeNode(
@@ -291,7 +291,7 @@ mod tests {
                         )),
                     ),
                     tree::BinTree::from(
-                        TreeNode(7, Symbol::from_operator_str(".").unwrap()),
+                        TreeNode(7, Symbol::Operator(ops::CONCATENATION)),
                         tree::BinTree::from_element(TreeNode(
                             5,
                             Symbol::from_value_str("c").unwrap(),
@@ -302,7 +302,10 @@ mod tests {
                         )),
                     ),
                 ),
-                tree::BinTree::from_element(TreeNode(9, Symbol::from_value_str("#").unwrap())),
+                tree::BinTree::from_element(TreeNode(
+                    9,
+                    Symbol::from_value_str(vals::Value::SPECIAL).unwrap(),
+                )),
             ),
         )];
 

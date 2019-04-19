@@ -14,8 +14,14 @@ impl Value {
     pub const EMPTY: types::SymbolRef = "ε";
     pub const SPECIAL: types::SymbolRef = "#";
 
-    fn new(symbol: types::Symbol) -> Self {
-        Value { symbol }
+    fn new() -> Self {
+        Value {
+            symbol: Self::EMPTY.to_string(),
+        }
+    }
+
+    pub fn from_valid_str(s: &str) -> Self {
+        Self::from_str(s).unwrap()
     }
 
     pub fn symbol(&self) -> &types::Symbol {
