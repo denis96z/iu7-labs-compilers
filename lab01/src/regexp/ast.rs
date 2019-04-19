@@ -11,10 +11,22 @@ use super::{ops, vals};
 type Stack<T> = Vec<T>;
 type Queue<T> = std::collections::VecDeque<T>;
 
-#[derive(Clone, Copy, Debug)]
+#[derive(PartialEq, Clone, Copy, Debug)]
 enum Symbol {
     Value(vals::Value),
     Operator(ops::Operator),
+}
+
+impl Symbol {
+    fn from_value_str(s: &str) -> Result<Self, ParseExpError> {
+        let value = vals::Value::from_str(s)?;
+        Ok(Symbol::Value(value))
+    }
+
+    fn from_operator_str(s: &str) -> Result<Self, ParseExpError> {
+        let operator = ops::Operator::from_str(s)?;
+        Ok(Symbol::Operator(operator))
+    }
 }
 
 #[derive(PartialEq, Debug)]
@@ -147,4 +159,32 @@ fn make_tree(symbols: &Queue<Symbol>) -> Result<BinTree<Symbol>, ParseExpError> 
     }
 
     Err(ParseExpError::new(symbols.len()))
+}
+
+mod tests {
+    use super::*;
+
+    #[test]
+    fn make_rpn() {
+        let cases = vec![(
+            "((a|b)c|d)#",
+            vec![
+                Symbol::from_value_str("a").unwrap(),
+                Symbol::from_value_str("b").unwrap(),
+                Symbol::from_operator_str("|").unwrap(),
+                Symbol::from_value_str("c").unwrap(),
+                Symbol::from_operator_str(".").unwrap(),
+                Symbol::from_value_str("d").unwrap(),
+                Symbol::from_operator_str("|").unwrap(),
+                Symbol::from_value_str("#").unwrap(),
+                Symbol::from_operator_str(".").unwrap(),
+            ]
+            .into_iter()
+            .collect::<Queue<_>>(),
+        )];
+
+        for case in cases {
+            assert_eq!(super::make_rpn(case.0).unwrap(), case.1);
+        }
+    }
 }
