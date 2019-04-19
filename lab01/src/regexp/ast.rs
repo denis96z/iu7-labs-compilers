@@ -6,9 +6,7 @@ use crate::tree;
 
 use super::errs;
 use super::{ops, vals};
-
-type Stack<T> = Vec<T>;
-type Queue<T> = std::collections::VecDeque<T>;
+use std::collections::btree_set::BTreeSet;
 
 #[derive(PartialEq, Clone, Debug)]
 pub struct AbstractSyntaxTree {
@@ -50,6 +48,10 @@ impl Symbol {
         Ok(Symbol::Operator(operator))
     }
 }
+
+type Stack<T> = Vec<T>;
+type Queue<T> = std::collections::VecDeque<T>;
+type Set<T> = std::collections::BTreeSet<T>;
 
 fn make_rpn(s: &str) -> Result<Queue<Symbol>, errs::ParseExpError> {
     let mut operators = Stack::new();
@@ -180,21 +182,115 @@ fn make_tree(symbols: Queue<Symbol>) -> Result<tree::BinTree<TreeNode>, errs::Pa
 #[derive(PartialEq, Eq, Debug)]
 struct Params {
     pub is_nullable: bool,
-    pub first_pos: Vec<usize>,
-    pub last_pos: Vec<usize>,
-    pub follow_pos: Vec<usize>,
+    pub first_pos: Set<usize>,
+    pub last_pos: Set<usize>,
+    pub follow_pos: Set<usize>,
 }
 
-fn make_params_tree(tree: &tree::BinTree<Symbol>) -> tree::BinTree<Params> {
-    if tree.is_empty() {
+fn make_params_tree(syntax_tree: &tree::BinTree<TreeNode>) -> tree::BinTree<Params> {
+    let make_set_from_vec = |v: Vec<_>| v.into_iter().collect::<Set<_>>();
+
+    let make_sets_union =
+        |s1: &Set<_>, s2: &Set<_>| s1.union(&s2).into_iter().cloned().collect::<Set<_>>();
+
+    if syntax_tree.is_empty() {
         tree::BinTree::from_element(Params {
             is_nullable: true,
-            first_pos: Vec::new(),
-            last_pos: Vec::new(),
-            follow_pos: Vec::new(),
+            first_pos: make_set_from_vec(vec![]),
+            last_pos: make_set_from_vec(vec![]),
+            follow_pos: make_set_from_vec(vec![]),
         })
     } else {
-        unimplemented!()
+        let current_node = match syntax_tree {
+            tree::BinTree::NonEmpty(tree_node) => tree_node,
+            _ => unreachable!(),
+        };
+
+        match &current_node.element.1 {
+            Symbol::Value(value) => {
+                tree::BinTree::from_element(Params {
+                    is_nullable: false,
+                    first_pos: make_set_from_vec(vec![current_node.element.0]),
+                    last_pos: make_set_from_vec(vec![current_node.element.0]),
+                    follow_pos: make_set_from_vec(vec![]), //TODO
+                })
+            }
+
+            Symbol::Operator(operator) => {
+                if *operator == ops::ITERATION {
+                    match make_params_tree(&current_node.left_tree) {
+                        tree::BinTree::NonEmpty(left_node) => {
+                            let params = Params {
+                                is_nullable: true,
+                                first_pos: left_node.element.first_pos.clone(),
+                                last_pos: left_node.element.last_pos.clone(),
+                                follow_pos: make_set_from_vec(vec![]), //TODO
+                            };
+                            tree::BinTree::from(
+                                params,
+                                tree::BinTree::NonEmpty(left_node),
+                                tree::BinTree::Empty,
+                            )
+                        }
+                        _ => unreachable!(),
+                    }
+                } else if *operator == ops::CONCATENATION || *operator == ops::COMBINATION {
+                    match make_params_tree(&current_node.left_tree) {
+                        tree::BinTree::NonEmpty(left_node) => {
+                            match make_params_tree(&current_node.right_tree) {
+                                tree::BinTree::NonEmpty(right_node) => {
+                                    let params = if *operator == ops::CONCATENATION {
+                                        Params {
+                                            is_nullable: true,
+                                            first_pos: if left_node.element.is_nullable {
+                                                make_sets_union(
+                                                    &left_node.element.first_pos,
+                                                    &right_node.element.first_pos,
+                                                )
+                                            } else {
+                                                left_node.element.first_pos.clone()
+                                            },
+                                            last_pos: if right_node.element.is_nullable {
+                                                make_sets_union(
+                                                    &left_node.element.last_pos,
+                                                    &right_node.element.last_pos,
+                                                )
+                                            } else {
+                                                right_node.element.last_pos.clone()
+                                            },
+                                            follow_pos: make_set_from_vec(vec![]), //TODO
+                                        }
+                                    } else {
+                                        Params {
+                                            is_nullable: true,
+                                            first_pos: make_sets_union(
+                                                &left_node.element.first_pos,
+                                                &right_node.element.first_pos,
+                                            ),
+                                            last_pos: make_sets_union(
+                                                &left_node.element.last_pos,
+                                                &right_node.element.last_pos,
+                                            ),
+                                            follow_pos: make_set_from_vec(vec![]), //TODO
+                                        }
+                                    };
+
+                                    tree::BinTree::from(
+                                        params,
+                                        tree::BinTree::NonEmpty(left_node),
+                                        tree::BinTree::Empty,
+                                    )
+                                }
+                                _ => unreachable!(),
+                            }
+                        }
+                        _ => unreachable!(),
+                    }
+                } else {
+                    unreachable!()
+                }
+            }
+        }
     }
 }
 
@@ -312,5 +408,13 @@ mod tests {
         for case in cases {
             assert_eq!(super::make_tree(case.0).unwrap(), case.1);
         }
+    }
+
+    #[test]
+    fn make_params_tree() {
+        let rpn = super::make_rpn("((a|b)*abb)#").unwrap();
+        let tree = super::make_tree(rpn).unwrap();
+        let p_tree = super::make_params_tree(&tree);
+        dbg!(&p_tree);
     }
 }

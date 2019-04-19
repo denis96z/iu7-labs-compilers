@@ -47,9 +47,9 @@ impl<T> BinTree<T> {
 
 #[derive(PartialEq, Clone, Debug)]
 pub struct TreeNode<T> {
-    element: T,
-    left_tree: BinTree<T>,
-    right_tree: BinTree<T>,
+    pub element: T,
+    pub left_tree: BinTree<T>,
+    pub right_tree: BinTree<T>,
 }
 
 impl<T> TreeNode<T> {
