@@ -183,7 +183,16 @@ struct Params {
 }
 
 fn make_params_tree(tree: &tree::BinTree<Symbol>) -> tree::BinTree<Params> {
-    unimplemented!()
+    if tree.is_empty() {
+        tree::BinTree::from_element(Params {
+            is_nullable: true,
+            first_pos: Vec::new(),
+            last_pos: Vec::new(),
+            follow_pos: Vec::new(),
+        })
+    } else {
+        unimplemented!()
+    }
 }
 
 mod tests {
