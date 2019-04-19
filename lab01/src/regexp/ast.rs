@@ -144,6 +144,7 @@ fn make_tree(symbols: &Queue<Symbol>) -> Result<BinTree<Symbol>, ParseExpError> 
             Symbol::Operator(operator) => {
                 if operator.is_unary() {
                     let node = BinTree::from(*symbol, stack.pop().unwrap(), BinTree::Empty);
+                    stack.push(node);
                 } else if operator.is_binary() {
                     let right_node = stack.pop().unwrap();
                     let left_node = stack.pop().unwrap();
@@ -158,7 +159,7 @@ fn make_tree(symbols: &Queue<Symbol>) -> Result<BinTree<Symbol>, ParseExpError> 
         }
     }
 
-    Err(ParseExpError::new(symbols.len()))
+    Ok(stack.pop().unwrap())
 }
 
 mod tests {
@@ -204,6 +205,50 @@ mod tests {
 
         for case in cases {
             assert_eq!(super::make_rpn(case.0).unwrap(), case.1);
+        }
+    }
+
+    #[test]
+    fn make_tree() {
+        let cases = vec![(
+            vec![
+                Symbol::from_value_str("a").unwrap(),
+                Symbol::from_operator_str("*").unwrap(),
+                Symbol::from_value_str("b").unwrap(),
+                Symbol::from_operator_str(".").unwrap(),
+                Symbol::from_value_str("c").unwrap(),
+                Symbol::from_value_str("d").unwrap(),
+                Symbol::from_operator_str(".").unwrap(),
+                Symbol::from_operator_str("|").unwrap(),
+                Symbol::from_value_str("#").unwrap(),
+                Symbol::from_operator_str(".").unwrap(),
+            ]
+            .into_iter()
+            .collect::<Queue<_>>(),
+            BinTree::from(
+                Symbol::from_operator_str(".").unwrap(),
+                BinTree::from(
+                    Symbol::from_operator_str("|").unwrap(),
+                    BinTree::from(
+                        Symbol::from_operator_str(".").unwrap(),
+                        BinTree::from_element_with_left(
+                            Symbol::from_operator_str("*").unwrap(),
+                            Symbol::from_value_str("a").unwrap(),
+                        ),
+                        BinTree::from_element(Symbol::from_value_str("b").unwrap()),
+                    ),
+                    BinTree::from(
+                        Symbol::from_operator_str(".").unwrap(),
+                        BinTree::from_element(Symbol::from_value_str("c").unwrap()),
+                        BinTree::from_element(Symbol::from_value_str("d").unwrap()),
+                    ),
+                ),
+                BinTree::from_element(Symbol::from_value_str("#").unwrap()),
+            ),
+        )];
+
+        for case in cases {
+            assert_eq!(super::make_tree(&case.0).unwrap(), case.1);
         }
     }
 }
