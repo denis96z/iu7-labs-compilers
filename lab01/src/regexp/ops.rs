@@ -140,23 +140,27 @@ pub fn is_right_associative(operator: &Operator) -> bool {
     operator.associativity == Associativity::Right
 }
 
-#[test]
-fn test_operator_from_str() {
-    assert_eq!(Operator::from_str("|").is_ok(), true);
-    assert_eq!(Operator::from_str(".").is_ok(), true);
-    assert_eq!(Operator::from_str("*").is_ok(), true);
-    assert_eq!(Operator::from_str("(").is_ok(), true);
-    assert_eq!(Operator::from_str(")").is_ok(), true);
-    assert_eq!(Operator::from_str("").is_err(), true);
-}
+mod tests {
+    use super::*;
 
-#[test]
-fn test_operator_cmp() {
-    let un = Operator::from_str("|").unwrap();
-    let mu = Operator::from_str(".").unwrap();
-    let it = Operator::from_str("*").unwrap();
+    #[test]
+    fn operator_from_str() {
+        assert_eq!(Operator::from_str("|").is_ok(), true);
+        assert_eq!(Operator::from_str(".").is_ok(), true);
+        assert_eq!(Operator::from_str("*").is_ok(), true);
+        assert_eq!(Operator::from_str("(").is_ok(), true);
+        assert_eq!(Operator::from_str(")").is_ok(), true);
+        assert_eq!(Operator::from_str("").is_err(), true);
+    }
 
-    assert_eq!(un < mu, true);
-    assert_eq!(it > mu, true);
-    assert_eq!(Operator::from_str("|").unwrap() == un, true);
+    #[test]
+    fn operator_cmp() {
+        let un = Operator::from_str("|").unwrap();
+        let mu = Operator::from_str(".").unwrap();
+        let it = Operator::from_str("*").unwrap();
+
+        assert_eq!(un < mu, true);
+        assert_eq!(it > mu, true);
+        assert_eq!(Operator::from_str("|").unwrap() == un, true);
+    }
 }

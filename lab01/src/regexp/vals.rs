@@ -63,24 +63,28 @@ pub fn is_value(s: &str) -> bool {
     true
 }
 
-#[test]
-fn test_value_from_str() {
-    assert_eq!(Value::from_str("a").is_ok(), true);
-    assert_eq!(Value::from_str("&").is_err(), true);
-    assert_eq!(Value::from_str("").is_err(), true);
-    assert_eq!(Value::from_str("abc").is_err(), true);
-}
+mod tests {
+    use super::*;
 
-#[test]
-fn test_value_cmp() {
-    let (s1, s2) = ("a", "b");
+    #[test]
+    fn test_value_from_str() {
+        assert_eq!(Value::from_str("a").is_ok(), true);
+        assert_eq!(Value::from_str("&").is_err(), true);
+        assert_eq!(Value::from_str("").is_err(), true);
+        assert_eq!(Value::from_str("abc").is_err(), true);
+    }
 
-    assert_eq!(
-        Value::from_str(s1).unwrap() == Value::from_str(s1).unwrap(),
-        true
-    );
-    assert_eq!(
-        Value::from_str(s1).unwrap() != Value::from_str(s2).unwrap(),
-        true
-    );
+    #[test]
+    fn test_value_cmp() {
+        let (s1, s2) = ("a", "b");
+
+        assert_eq!(
+            Value::from_str(s1).unwrap() == Value::from_str(s1).unwrap(),
+            true
+        );
+        assert_eq!(
+            Value::from_str(s1).unwrap() != Value::from_str(s2).unwrap(),
+            true
+        );
+    }
 }
