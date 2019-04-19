@@ -33,24 +33,27 @@ pub const CLOSING_PARENTHESIS: Operator = Operator {
     associativity: Associativity::Left,
 };
 
-pub const UNARY_OPERATORS: [Operator; 1] = [Operator {
+pub const CONCATENATION: Operator = Operator {
+    symbol: ".",
+    priority: Priority(2),
+    associativity: Associativity::Left,
+};
+
+pub const COMBINATION: Operator = Operator {
+    symbol: "|",
+    priority: Priority(1),
+    associativity: Associativity::Left,
+};
+
+pub const ITERATION: Operator = Operator {
     symbol: "*",
     priority: Priority(3),
     associativity: Associativity::Right,
-}];
+};
 
-pub const BINARY_OPERATORS: [Operator; 2] = [
-    Operator {
-        symbol: "|",
-        priority: Priority(1),
-        associativity: Associativity::Left,
-    },
-    Operator {
-        symbol: ".",
-        priority: Priority(2),
-        associativity: Associativity::Left,
-    },
-];
+pub const UNARY_OPERATORS: [&'static Operator; 1] = [&ITERATION];
+
+pub const BINARY_OPERATORS: [&'static Operator; 2] = [&CONCATENATION, &COMBINATION];
 
 impl Operator {
     pub fn symbol(&self) -> types::SymbolRef {
@@ -70,11 +73,11 @@ impl Operator {
     }
 
     pub fn is_unary(&self) -> bool {
-        self.symbol == "*"
+        is_unary_operator(self.symbol)
     }
 
     pub fn is_binary(&self) -> bool {
-        self.symbol == "|" || self.symbol == "."
+        is_binary_operator(self.symbol)
     }
 }
 
@@ -111,13 +114,13 @@ impl FromStr for Operator {
         } else {
             for operator in UNARY_OPERATORS.iter() {
                 if s == operator.symbol {
-                    return Ok(operator.clone());
+                    return Ok((*operator).clone());
                 }
             }
 
             for operator in BINARY_OPERATORS.iter() {
                 if s == operator.symbol {
-                    return Ok(operator.clone());
+                    return Ok((*operator).clone());
                 }
             }
 
@@ -164,11 +167,7 @@ mod tests {
 
     #[test]
     fn operator_from_str() {
-        assert_eq!(Operator::from_str("|").is_ok(), true);
-        assert_eq!(Operator::from_str(".").is_ok(), true);
-        assert_eq!(Operator::from_str("*").is_ok(), true);
-        assert_eq!(Operator::from_str("(").is_ok(), true);
-        assert_eq!(Operator::from_str(")").is_ok(), true);
+        assert_eq!(Operator::from_str(ITERATION.symbol()).is_ok(), true);
         assert_eq!(Operator::from_str("").is_err(), true);
     }
 
