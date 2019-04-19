@@ -9,28 +9,32 @@ impl<T> BinTree<T> {
         BinTree::Empty
     }
 
-    pub fn from(element: T, left: BinTree<T>, right: BinTree<T>) -> Self {
-        BinTree::NonEmpty(Box::new(TreeNode::from(element, left, right)))
+    pub fn from(element: T, left_tree: BinTree<T>, right_tree: BinTree<T>) -> Self {
+        BinTree::NonEmpty(Box::new(TreeNode::from(element, left_tree, right_tree)))
     }
 
     pub fn from_element(element: T) -> Self {
         BinTree::NonEmpty(Box::new(TreeNode::new(element)))
     }
 
-    pub fn from_elements(element: T, left: T, right: T) -> Self {
+    pub fn from_elements(element: T, left_element: T, right_element: T) -> Self {
         BinTree::from(
             element,
-            BinTree::from_element(left),
-            BinTree::from_element(right),
+            BinTree::from_element(left_element),
+            BinTree::from_element(right_element),
         )
     }
 
-    pub fn from_element_with_left(element: T, left: T) -> Self {
-        BinTree::from(element, BinTree::from_element(left), BinTree::Empty)
+    pub fn from_element_with_left(element: T, left_element: T) -> Self {
+        BinTree::from(element, BinTree::from_element(left_element), BinTree::Empty)
     }
 
-    pub fn from_element_with_right(element: T, right: T) -> Self {
-        BinTree::from(element, BinTree::Empty, BinTree::from_element(right))
+    pub fn from_element_with_right(element: T, right_element: T) -> Self {
+        BinTree::from(
+            element,
+            BinTree::Empty,
+            BinTree::from_element(right_element),
+        )
     }
 
     pub fn is_empty(&self) -> bool {
@@ -44,24 +48,24 @@ impl<T> BinTree<T> {
 #[derive(PartialEq, Clone, Debug)]
 pub struct TreeNode<T> {
     element: T,
-    left: BinTree<T>,
-    right: BinTree<T>,
+    left_tree: BinTree<T>,
+    right_tree: BinTree<T>,
 }
 
 impl<T> TreeNode<T> {
     pub fn new(element: T) -> Self {
         TreeNode {
             element,
-            left: BinTree::Empty,
-            right: BinTree::Empty,
+            left_tree: BinTree::Empty,
+            right_tree: BinTree::Empty,
         }
     }
 
     pub fn from(element: T, left: BinTree<T>, right: BinTree<T>) -> Self {
         TreeNode {
             element,
-            left,
-            right,
+            left_tree: left,
+            right_tree: right,
         }
     }
 }
@@ -77,8 +81,8 @@ mod tests {
             TreeNode::new(c),
             TreeNode {
                 element: c,
-                left: BinTree::Empty,
-                right: BinTree::Empty
+                left_tree: BinTree::Empty,
+                right_tree: BinTree::Empty
             }
         )
     }
@@ -93,8 +97,8 @@ mod tests {
             TreeNode::from(c, left.clone(), right.clone()),
             TreeNode {
                 element: c,
-                left,
-                right
+                left_tree: left,
+                right_tree: right
             }
         )
     }
@@ -112,8 +116,8 @@ mod tests {
             BinTree::Empty => panic!(),
             BinTree::NonEmpty(v) => {
                 assert_eq!(v.element, element);
-                assert_eq!(v.left, BinTree::Empty);
-                assert_eq!(v.right, BinTree::Empty);
+                assert_eq!(v.left_tree, BinTree::Empty);
+                assert_eq!(v.right_tree, BinTree::Empty);
             }
         }
     }
@@ -126,8 +130,8 @@ mod tests {
             BinTree::Empty => panic!(),
             BinTree::NonEmpty(v) => {
                 assert_eq!(v.element, element);
-                assert_eq!(v.left, BinTree::from_element(left));
-                assert_eq!(v.right, BinTree::Empty);
+                assert_eq!(v.left_tree, BinTree::from_element(left));
+                assert_eq!(v.right_tree, BinTree::Empty);
             }
         }
     }
@@ -140,8 +144,8 @@ mod tests {
             BinTree::Empty => panic!(),
             BinTree::NonEmpty(v) => {
                 assert_eq!(v.element, element);
-                assert_eq!(v.left, BinTree::Empty);
-                assert_eq!(v.right, BinTree::from_element(right));
+                assert_eq!(v.left_tree, BinTree::Empty);
+                assert_eq!(v.right_tree, BinTree::from_element(right));
             }
         }
     }
@@ -154,8 +158,8 @@ mod tests {
             BinTree::Empty => panic!(),
             BinTree::NonEmpty(v) => {
                 assert_eq!(v.element, element);
-                assert_eq!(v.left, BinTree::from_element(left));
-                assert_eq!(v.right, BinTree::from_element(right));
+                assert_eq!(v.left_tree, BinTree::from_element(left));
+                assert_eq!(v.right_tree, BinTree::from_element(right));
             }
         }
     }

@@ -12,7 +12,7 @@ type Queue<T> = std::collections::VecDeque<T>;
 
 #[derive(PartialEq, Clone, Debug)]
 pub struct AbstractSyntaxTree {
-    root: tree::BinTree<Symbol>,
+    root: tree::BinTree<TreeNode>,
 }
 
 impl AbstractSyntaxTree {
@@ -133,25 +133,35 @@ fn make_rpn(s: &str) -> Result<Queue<Symbol>, errs::ParseExpError> {
     Ok(symbols)
 }
 
-fn make_tree(symbols: &Queue<Symbol>) -> Result<tree::BinTree<Symbol>, errs::ParseExpError> {
+#[derive(PartialEq, Clone, Copy, Debug)]
+struct TreeNode(usize, Symbol);
+
+fn make_tree(symbols: &Queue<Symbol>) -> Result<tree::BinTree<TreeNode>, errs::ParseExpError> {
     let mut stack = Stack::new();
 
+    let mut index = 0usize;
+
     for symbol in symbols.iter() {
+        index += 1;
+
         match symbol {
             Symbol::Value(value) => {
-                stack.push(tree::BinTree::from_element(*symbol));
+                stack.push(tree::BinTree::from_element(TreeNode(index, *symbol)));
             }
 
             Symbol::Operator(operator) => {
                 if operator.is_unary() {
-                    let node =
-                        tree::BinTree::from(*symbol, stack.pop().unwrap(), tree::BinTree::Empty);
+                    let node = tree::BinTree::from(
+                        TreeNode(index, *symbol),
+                        stack.pop().unwrap(),
+                        tree::BinTree::Empty,
+                    );
                     stack.push(node);
                 } else if operator.is_binary() {
                     let right_node = stack.pop().unwrap();
                     let left_node = stack.pop().unwrap();
 
-                    let node = tree::BinTree::from(*symbol, left_node, right_node);
+                    let node = tree::BinTree::from(TreeNode(index, *symbol), left_node, right_node);
 
                     stack.push(node);
                 } else {
@@ -254,24 +264,33 @@ mod tests {
             .into_iter()
             .collect::<Queue<_>>(),
             tree::BinTree::from(
-                Symbol::from_operator_str(".").unwrap(),
+                TreeNode(10, Symbol::from_operator_str(".").unwrap()),
                 tree::BinTree::from(
-                    Symbol::from_operator_str("|").unwrap(),
+                    TreeNode(8, Symbol::from_operator_str("|").unwrap()),
                     tree::BinTree::from(
-                        Symbol::from_operator_str(".").unwrap(),
+                        TreeNode(4, Symbol::from_operator_str(".").unwrap()),
                         tree::BinTree::from_element_with_left(
-                            Symbol::from_operator_str("*").unwrap(),
-                            Symbol::from_value_str("a").unwrap(),
+                            TreeNode(2, Symbol::from_operator_str("*").unwrap()),
+                            TreeNode(1, Symbol::from_value_str("a").unwrap()),
                         ),
-                        tree::BinTree::from_element(Symbol::from_value_str("b").unwrap()),
+                        tree::BinTree::from_element(TreeNode(
+                            3,
+                            Symbol::from_value_str("b").unwrap(),
+                        )),
                     ),
                     tree::BinTree::from(
-                        Symbol::from_operator_str(".").unwrap(),
-                        tree::BinTree::from_element(Symbol::from_value_str("c").unwrap()),
-                        tree::BinTree::from_element(Symbol::from_value_str("d").unwrap()),
+                        TreeNode(7, Symbol::from_operator_str(".").unwrap()),
+                        tree::BinTree::from_element(TreeNode(
+                            5,
+                            Symbol::from_value_str("c").unwrap(),
+                        )),
+                        tree::BinTree::from_element(TreeNode(
+                            6,
+                            Symbol::from_value_str("d").unwrap(),
+                        )),
                     ),
                 ),
-                tree::BinTree::from_element(Symbol::from_value_str("#").unwrap()),
+                tree::BinTree::from_element(TreeNode(9, Symbol::from_value_str("#").unwrap())),
             ),
         )];
 
