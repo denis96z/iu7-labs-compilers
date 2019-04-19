@@ -166,22 +166,41 @@ mod tests {
 
     #[test]
     fn make_rpn() {
-        let cases = vec![(
-            "((a|b)c|d)#",
-            vec![
-                Symbol::from_value_str("a").unwrap(),
-                Symbol::from_value_str("b").unwrap(),
-                Symbol::from_operator_str("|").unwrap(),
-                Symbol::from_value_str("c").unwrap(),
-                Symbol::from_operator_str(".").unwrap(),
-                Symbol::from_value_str("d").unwrap(),
-                Symbol::from_operator_str("|").unwrap(),
-                Symbol::from_value_str("#").unwrap(),
-                Symbol::from_operator_str(".").unwrap(),
-            ]
-            .into_iter()
-            .collect::<Queue<_>>(),
-        )];
+        let cases = vec![
+            (
+                "((a|b)c|d)#",
+                vec![
+                    Symbol::from_value_str("a").unwrap(),
+                    Symbol::from_value_str("b").unwrap(),
+                    Symbol::from_operator_str("|").unwrap(),
+                    Symbol::from_value_str("c").unwrap(),
+                    Symbol::from_operator_str(".").unwrap(),
+                    Symbol::from_value_str("d").unwrap(),
+                    Symbol::from_operator_str("|").unwrap(),
+                    Symbol::from_value_str("#").unwrap(),
+                    Symbol::from_operator_str(".").unwrap(),
+                ]
+                .into_iter()
+                .collect::<Queue<_>>(),
+            ),
+            (
+                "(a*b|cd)#",
+                vec![
+                    Symbol::from_value_str("a").unwrap(),
+                    Symbol::from_operator_str("*").unwrap(),
+                    Symbol::from_value_str("b").unwrap(),
+                    Symbol::from_operator_str(".").unwrap(),
+                    Symbol::from_value_str("c").unwrap(),
+                    Symbol::from_value_str("d").unwrap(),
+                    Symbol::from_operator_str(".").unwrap(),
+                    Symbol::from_operator_str("|").unwrap(),
+                    Symbol::from_value_str("#").unwrap(),
+                    Symbol::from_operator_str(".").unwrap(),
+                ]
+                .into_iter()
+                .collect::<Queue<_>>(),
+            ),
+        ];
 
         for case in cases {
             assert_eq!(super::make_rpn(case.0).unwrap(), case.1);
