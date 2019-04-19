@@ -1,8 +1,8 @@
+use std::cmp::Ordering;
 use std::error::Error;
 use std::str::FromStr;
-use std::{cmp, error, fmt};
 
-use super::errs::ParseExpError;
+use super::errs;
 use super::types;
 
 #[derive(Clone, Copy, Debug)]
@@ -24,19 +24,19 @@ impl Value {
 }
 
 impl FromStr for Value {
-    type Err = ParseExpError;
+    type Err = errs::ParseExpError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         if s.is_empty() {
-            Err(ParseExpError::new(0))
+            Err(errs::ParseExpError::new(0))
         } else if s.len() > 1 {
-            Err(ParseExpError::new(1))
+            Err(errs::ParseExpError::new(1))
         } else {
             let c = s.chars().next().unwrap();
             if is_value(&s.to_string()) {
                 Ok(Value::new(c))
             } else {
-                Err(ParseExpError::new(0))
+                Err(errs::ParseExpError::new(0))
             }
         }
     }
@@ -49,7 +49,7 @@ impl PartialEq for Value {
 }
 
 impl PartialOrd for Value {
-    fn partial_cmp(&self, other: &Self) -> Option<cmp::Ordering> {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         self.symbol.partial_cmp(&other.symbol)
     }
 }

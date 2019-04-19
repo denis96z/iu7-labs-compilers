@@ -1,5 +1,6 @@
 use std::error::Error;
-use std::{error, fmt};
+use std::fmt::Result as FmtResult;
+use std::fmt::{Display, Formatter};
 
 #[derive(PartialEq, Eq, Clone, Debug)]
 pub struct ParseExpError {
@@ -16,18 +17,18 @@ impl ParseExpError {
     }
 }
 
-impl fmt::Display for ParseExpError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+impl Display for ParseExpError {
+    fn fmt(&self, f: &mut Formatter) -> FmtResult {
         write!(f, "{}", self.message)
     }
 }
 
-impl error::Error for ParseExpError {
+impl Error for ParseExpError {
     fn description(&self) -> &str {
         &self.message
     }
 
-    fn cause(&self) -> Option<&error::Error> {
+    fn cause(&self) -> Option<&Error> {
         None
     }
 }

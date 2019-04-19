@@ -1,8 +1,8 @@
+use std::cmp::Ordering;
 use std::error::Error;
 use std::str::FromStr;
-use std::{cmp, error, fmt};
 
-use super::errs::ParseExpError;
+use super::errs;
 use super::types;
 
 #[derive(PartialEq, Eq, PartialOrd, Ord, Copy, Clone, Debug)]
@@ -57,14 +57,14 @@ impl PartialEq for Operator {
 }
 
 impl PartialOrd for Operator {
-    fn partial_cmp(&self, other: &Self) -> Option<cmp::Ordering> {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         if *self == *other {
-            Some(cmp::Ordering::Equal)
+            Some(Ordering::Equal)
         } else {
             if self.priority < other.priority {
-                Some(cmp::Ordering::Less)
+                Some(Ordering::Less)
             } else if self.priority > other.priority {
-                Some(cmp::Ordering::Greater)
+                Some(Ordering::Greater)
             } else {
                 None
             }
@@ -73,7 +73,7 @@ impl PartialOrd for Operator {
 }
 
 impl FromStr for Operator {
-    type Err = ParseExpError;
+    type Err = errs::ParseExpError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
@@ -107,7 +107,7 @@ impl FromStr for Operator {
                 associativity: Associativity::Left,
             }),
 
-            _ => Err(ParseExpError::new(0)),
+            _ => Err(errs::ParseExpError::new(0)),
         }
     }
 }

@@ -1,11 +1,10 @@
 use std::collections::VecDeque;
 use std::error::Error;
 use std::str::FromStr;
-use std::{error, fmt};
 
-use crate::tree::{BinTree, TreeNode};
+use crate::tree;
 
-use super::errs::ParseExpError;
+use super::errs;
 use super::{ops, vals};
 
 type Stack<T> = Vec<T>;
@@ -18,12 +17,12 @@ enum Symbol {
 }
 
 impl Symbol {
-    fn from_value_str(s: &str) -> Result<Self, ParseExpError> {
+    fn from_value_str(s: &str) -> Result<Self, errs::ParseExpError> {
         let value = vals::Value::from_str(s)?;
         Ok(Symbol::Value(value))
     }
 
-    fn from_operator_str(s: &str) -> Result<Self, ParseExpError> {
+    fn from_operator_str(s: &str) -> Result<Self, errs::ParseExpError> {
         let operator = ops::Operator::from_str(s)?;
         Ok(Symbol::Operator(operator))
     }
@@ -31,26 +30,26 @@ impl Symbol {
 
 #[derive(PartialEq, Clone, Debug)]
 pub struct AbstractSyntaxTree {
-    root: BinTree<Symbol>,
+    root: tree::BinTree<Symbol>,
 }
 
 impl AbstractSyntaxTree {
     pub fn new() -> Self {
         AbstractSyntaxTree {
-            root: BinTree::new(),
+            root: tree::BinTree::new(),
         }
     }
 }
 
 impl FromStr for AbstractSyntaxTree {
-    type Err = ParseExpError;
+    type Err = errs::ParseExpError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         unimplemented!()
     }
 }
 
-fn make_rpn(s: &str) -> Result<Queue<Symbol>, ParseExpError> {
+fn make_rpn(s: &str) -> Result<Queue<Symbol>, errs::ParseExpError> {
     let mut operators = Stack::new();
     let mut symbols = Queue::with_capacity(s.len());
 
@@ -113,7 +112,7 @@ fn make_rpn(s: &str) -> Result<Queue<Symbol>, ParseExpError> {
         } else if ops::is_operator(cur_str) {
             h(cur_str);
         } else {
-            return Err(ParseExpError::new(index));
+            return Err(errs::ParseExpError::new(index));
         }
 
         prev = cur;
@@ -123,7 +122,7 @@ fn make_rpn(s: &str) -> Result<Queue<Symbol>, ParseExpError> {
         let top = operators.pop().unwrap();
 
         if top.is_opening_parenthesis() {
-            return Err(ParseExpError::new(s.len()));
+            return Err(errs::ParseExpError::new(s.len()));
         } else {
             symbols.push_back(Symbol::Operator(top));
         }
@@ -132,24 +131,25 @@ fn make_rpn(s: &str) -> Result<Queue<Symbol>, ParseExpError> {
     Ok(symbols)
 }
 
-fn make_tree(symbols: &Queue<Symbol>) -> Result<BinTree<Symbol>, ParseExpError> {
+fn make_tree(symbols: &Queue<Symbol>) -> Result<tree::BinTree<Symbol>, errs::ParseExpError> {
     let mut stack = Stack::new();
 
     for symbol in symbols.iter() {
         match symbol {
             Symbol::Value(value) => {
-                stack.push(BinTree::from_element(*symbol));
+                stack.push(tree::BinTree::from_element(*symbol));
             }
 
             Symbol::Operator(operator) => {
                 if operator.is_unary() {
-                    let node = BinTree::from(*symbol, stack.pop().unwrap(), BinTree::Empty);
+                    let node =
+                        tree::BinTree::from(*symbol, stack.pop().unwrap(), tree::BinTree::Empty);
                     stack.push(node);
                 } else if operator.is_binary() {
                     let right_node = stack.pop().unwrap();
                     let left_node = stack.pop().unwrap();
 
-                    let node = BinTree::from(*symbol, left_node, right_node);
+                    let node = tree::BinTree::from(*symbol, left_node, right_node);
 
                     stack.push(node);
                 } else {
@@ -225,25 +225,25 @@ mod tests {
             ]
             .into_iter()
             .collect::<Queue<_>>(),
-            BinTree::from(
+            tree::BinTree::from(
                 Symbol::from_operator_str(".").unwrap(),
-                BinTree::from(
+                tree::BinTree::from(
                     Symbol::from_operator_str("|").unwrap(),
-                    BinTree::from(
+                    tree::BinTree::from(
                         Symbol::from_operator_str(".").unwrap(),
-                        BinTree::from_element_with_left(
+                        tree::BinTree::from_element_with_left(
                             Symbol::from_operator_str("*").unwrap(),
                             Symbol::from_value_str("a").unwrap(),
                         ),
-                        BinTree::from_element(Symbol::from_value_str("b").unwrap()),
+                        tree::BinTree::from_element(Symbol::from_value_str("b").unwrap()),
                     ),
-                    BinTree::from(
+                    tree::BinTree::from(
                         Symbol::from_operator_str(".").unwrap(),
-                        BinTree::from_element(Symbol::from_value_str("c").unwrap()),
-                        BinTree::from_element(Symbol::from_value_str("d").unwrap()),
+                        tree::BinTree::from_element(Symbol::from_value_str("c").unwrap()),
+                        tree::BinTree::from_element(Symbol::from_value_str("d").unwrap()),
                     ),
                 ),
-                BinTree::from_element(Symbol::from_value_str("#").unwrap()),
+                tree::BinTree::from_element(Symbol::from_value_str("#").unwrap()),
             ),
         )];
 
