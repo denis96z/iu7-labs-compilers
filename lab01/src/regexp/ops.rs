@@ -5,16 +5,16 @@ use std::{cmp, error, fmt};
 use super::error::ParseExpError;
 use super::types;
 
-#[derive(Eq, PartialEq, Ord, PartialOrd, Copy, Clone, Debug)]
+#[derive(PartialEq, Eq, PartialOrd, Ord, Copy, Clone, Debug)]
 pub struct Priority(u8);
 
-#[derive(PartialEq, Copy, Clone, Debug)]
+#[derive(PartialEq, Clone, Copy, Debug)]
 pub enum Associativity {
     Left,
     Right,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Copy, Debug)]
 pub struct Operator {
     symbol: types::Symbol,
     priority: Priority,
@@ -39,6 +39,14 @@ impl Operator {
 
     pub fn is_closing_parenthesis(&self) -> bool {
         self.symbol == Self::CLOSING_PARENTHESIS
+    }
+
+    pub fn is_unary(&self) -> bool {
+        self.symbol == '*'
+    }
+
+    pub fn is_binary(&self) -> bool {
+        self.symbol == '|' || self.symbol == '.'
     }
 }
 

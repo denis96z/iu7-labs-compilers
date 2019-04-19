@@ -8,7 +8,10 @@ use crate::tree::{BinTree, TreeNode};
 use super::error::ParseExpError;
 use super::{ops, vals};
 
-#[derive(Debug)]
+type Stack<T> = Vec<T>;
+type Queue<T> = std::collections::VecDeque<T>;
+
+#[derive(Clone, Copy, Debug)]
 enum Symbol {
     Value(vals::Value),
     Operator(ops::Operator),
@@ -35,29 +38,29 @@ impl FromStr for AbstractSyntaxTree {
     }
 }
 
-fn make_rpn(s: &str) -> VecDeque<Symbol> {
-    let mut ops_stack: Vec<ops::Operator> = Vec::new();
-    let mut exp_queue: VecDeque<Symbol> = VecDeque::with_capacity(s.len());
+fn make_rpn(s: &str) -> Result<Queue<Symbol>, ParseExpError> {
+    let mut operators = Stack::new();
+    let mut symbols = Queue::with_capacity(s.len());
 
     let mut h = |s: &str| {
         if ops::is_operator(s) {
             let operator = ops::Operator::from_str(s).unwrap();
 
             if operator.is_opening_parenthesis() {
-                ops_stack.push(operator);
+                operators.push(operator);
             } else if operator.is_closing_parenthesis() {
-                while !ops_stack.is_empty() {
-                    let top = ops_stack.pop().unwrap();
+                while !operators.is_empty() {
+                    let top = operators.pop().unwrap();
                     if top.symbol() == ops::Operator::OPENING_PARENTHESIS {
                         break;
                     }
-                    exp_queue.push_back(Symbol::Operator(top));
+                    symbols.push_back(Symbol::Operator(top));
                 }
             } else {
                 let mut flag = true;
 
-                while !ops_stack.is_empty() && flag {
-                    let top = ops_stack.last().unwrap();
+                while !operators.is_empty() && flag {
+                    let top = operators.last().unwrap();
                     if top.is_opening_parenthesis() {
                         break;
                     }
@@ -66,17 +69,17 @@ fn make_rpn(s: &str) -> VecDeque<Symbol> {
                     let right_cond = ops::is_right_associative(&operator) && operator < *top;
 
                     if left_cond || right_cond {
-                        exp_queue.push_back(Symbol::Operator(ops_stack.pop().unwrap()));
+                        symbols.push_back(Symbol::Operator(operators.pop().unwrap()));
                     } else {
                         flag = false;
                     }
                 }
 
-                ops_stack.push(operator);
+                operators.push(operator);
             };
         } else if vals::is_value(s) {
             let value = vals::Value::from_str(s).unwrap();
-            exp_queue.push_back(Symbol::Value(value));
+            symbols.push_back(Symbol::Value(value));
         };
     };
 
@@ -98,21 +101,50 @@ fn make_rpn(s: &str) -> VecDeque<Symbol> {
         } else if ops::is_operator(cur_str) {
             h(cur_str);
         } else {
-            unimplemented!(); //TODO handle error
+            return Err(ParseExpError::new(index));
         }
 
         prev = cur;
     }
 
-    while !ops_stack.is_empty() {
-        let top = ops_stack.pop().unwrap();
+    while !operators.is_empty() {
+        let top = operators.pop().unwrap();
 
         if top.is_opening_parenthesis() {
-            unimplemented!() //TODO handle error
+            return Err(ParseExpError::new(s.len()));
         } else {
-            exp_queue.push_back(Symbol::Operator(top));
+            symbols.push_back(Symbol::Operator(top));
         }
     }
 
-    exp_queue
+    Ok(symbols)
+}
+
+fn make_tree(symbols: &Queue<Symbol>) -> Result<BinTree<Symbol>, ParseExpError> {
+    let mut stack = Stack::new();
+
+    for symbol in symbols.iter() {
+        match symbol {
+            Symbol::Value(value) => {
+                stack.push(BinTree::from_element(*symbol));
+            }
+
+            Symbol::Operator(operator) => {
+                if operator.is_unary() {
+                    let node = BinTree::from(*symbol, stack.pop().unwrap(), BinTree::Empty);
+                } else if operator.is_binary() {
+                    let right_node = stack.pop().unwrap();
+                    let left_node = stack.pop().unwrap();
+
+                    let node = BinTree::from(*symbol, left_node, right_node);
+
+                    stack.push(node);
+                } else {
+                    unreachable!();
+                }
+            }
+        }
+    }
+
+    Err(ParseExpError::new(symbols.len()))
 }

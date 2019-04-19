@@ -5,7 +5,7 @@ use std::{cmp, error, fmt};
 use super::error::ParseExpError;
 use super::types;
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Clone, Copy, Debug)]
 pub struct Value {
     symbol: types::Symbol,
 }
