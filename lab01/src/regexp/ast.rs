@@ -10,24 +10,6 @@ use super::{ops, vals};
 type Stack<T> = Vec<T>;
 type Queue<T> = std::collections::VecDeque<T>;
 
-#[derive(PartialEq, Clone, Copy, Debug)]
-enum Symbol {
-    Value(vals::Value),
-    Operator(ops::Operator),
-}
-
-impl Symbol {
-    fn from_value_str(s: &str) -> Result<Self, errs::ParseExpError> {
-        let value = vals::Value::from_str(s)?;
-        Ok(Symbol::Value(value))
-    }
-
-    fn from_operator_str(s: &str) -> Result<Self, errs::ParseExpError> {
-        let operator = ops::Operator::from_str(s)?;
-        Ok(Symbol::Operator(operator))
-    }
-}
-
 #[derive(PartialEq, Clone, Debug)]
 pub struct AbstractSyntaxTree {
     root: tree::BinTree<Symbol>,
@@ -48,6 +30,24 @@ impl FromStr for AbstractSyntaxTree {
         Ok(AbstractSyntaxTree {
             root: make_tree(&make_rpn(s)?)?,
         })
+    }
+}
+
+#[derive(PartialEq, Clone, Copy, Debug)]
+enum Symbol {
+    Value(vals::Value),
+    Operator(ops::Operator),
+}
+
+impl Symbol {
+    fn from_value_str(s: &str) -> Result<Self, errs::ParseExpError> {
+        let value = vals::Value::from_str(s)?;
+        Ok(Symbol::Value(value))
+    }
+
+    fn from_operator_str(s: &str) -> Result<Self, errs::ParseExpError> {
+        let operator = ops::Operator::from_str(s)?;
+        Ok(Symbol::Operator(operator))
     }
 }
 

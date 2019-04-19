@@ -5,6 +5,13 @@ use std::str::FromStr;
 use super::errs;
 use super::types;
 
+#[derive(Clone, Copy, Debug)]
+pub struct Operator {
+    symbol: types::Symbol,
+    priority: Priority,
+    associativity: Associativity,
+}
+
 #[derive(PartialEq, Eq, PartialOrd, Ord, Copy, Clone, Debug)]
 pub struct Priority(u8);
 
@@ -12,13 +19,6 @@ pub struct Priority(u8);
 pub enum Associativity {
     Left,
     Right,
-}
-
-#[derive(Clone, Copy, Debug)]
-pub struct Operator {
-    symbol: types::Symbol,
-    priority: Priority,
-    associativity: Associativity,
 }
 
 impl Operator {
