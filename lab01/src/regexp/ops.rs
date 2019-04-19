@@ -173,12 +173,8 @@ mod tests {
 
     #[test]
     fn operator_cmp() {
-        let un = Operator::from_str("|").unwrap();
-        let mu = Operator::from_str(".").unwrap();
-        let it = Operator::from_str("*").unwrap();
-
-        assert_eq!(un < mu, true);
-        assert_eq!(it > mu, true);
-        assert_eq!(Operator::from_str("|").unwrap() == un, true);
+        assert_eq!(COMBINATION < CONCATENATION, true);
+        assert_eq!(ITERATION > CONCATENATION, true);
+        assert_eq!(ITERATION == ITERATION, true);
     }
 }
