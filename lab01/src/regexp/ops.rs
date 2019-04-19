@@ -5,7 +5,7 @@ use std::str::FromStr;
 use super::errs;
 use super::types;
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Debug)]
 pub struct Operator {
     symbol: types::Symbol,
     priority: Priority,
@@ -22,11 +22,11 @@ pub enum Associativity {
 }
 
 impl Operator {
-    pub const OPENING_PARENTHESIS: types::Symbol = '(';
-    pub const CLOSING_PARENTHESIS: types::Symbol = ')';
+    pub const OPENING_PARENTHESIS: types::SymbolRef = "(";
+    pub const CLOSING_PARENTHESIS: types::SymbolRef = ")";
 
-    pub fn symbol(&self) -> types::Symbol {
-        self.symbol
+    pub fn symbol(&self) -> &types::Symbol {
+        &self.symbol
     }
 
     pub fn associativity(&self) -> Associativity {
@@ -42,11 +42,11 @@ impl Operator {
     }
 
     pub fn is_unary(&self) -> bool {
-        self.symbol == '*'
+        self.symbol == "*"
     }
 
     pub fn is_binary(&self) -> bool {
-        self.symbol == '|' || self.symbol == '.'
+        self.symbol == "|" || self.symbol == "."
     }
 }
 
@@ -78,31 +78,31 @@ impl FromStr for Operator {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
             "|" => Ok(Operator {
-                symbol: s.chars().next().unwrap(),
+                symbol: s.to_string(),
                 priority: Priority(1),
                 associativity: Associativity::Left,
             }),
 
             "." => Ok(Operator {
-                symbol: s.chars().next().unwrap(),
+                symbol: s.to_string(),
                 priority: Priority(2),
                 associativity: Associativity::Left,
             }),
 
             "*" => Ok(Operator {
-                symbol: s.chars().next().unwrap(),
+                symbol: s.to_string(),
                 priority: Priority(3),
                 associativity: Associativity::Right,
             }),
 
             "(" => Ok(Operator {
-                symbol: s.chars().next().unwrap(),
+                symbol: s.to_string(),
                 priority: Priority(0),
                 associativity: Associativity::Left,
             }),
 
             ")" => Ok(Operator {
-                symbol: s.chars().next().unwrap(),
+                symbol: s.to_string(),
                 priority: Priority(0),
                 associativity: Associativity::Left,
             }),

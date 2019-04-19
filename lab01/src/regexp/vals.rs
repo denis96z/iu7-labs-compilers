@@ -5,21 +5,21 @@ use std::str::FromStr;
 use super::errs;
 use super::types;
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Debug)]
 pub struct Value {
     symbol: types::Symbol,
 }
 
 impl Value {
-    pub const EMPTY: types::Symbol = 'ε';
-    pub const SPECIAL: types::Symbol = '#';
+    pub const EMPTY: types::SymbolRef = "ε";
+    pub const SPECIAL: types::SymbolRef = "#";
 
     fn new(symbol: types::Symbol) -> Self {
         Value { symbol }
     }
 
-    pub fn symbol(&self) -> types::Symbol {
-        self.symbol
+    pub fn symbol(&self) -> &types::Symbol {
+        &self.symbol
     }
 }
 
@@ -32,9 +32,10 @@ impl FromStr for Value {
         } else if s.len() > 1 {
             Err(errs::ParseExpError::new(1))
         } else {
-            let c = s.chars().next().unwrap();
-            if is_value(&s.to_string()) {
-                Ok(Value::new(c))
+            if is_value(s) {
+                Ok(Value {
+                    symbol: s.to_string(),
+                })
             } else {
                 Err(errs::ParseExpError::new(0))
             }
@@ -55,12 +56,16 @@ impl PartialOrd for Value {
 }
 
 pub fn is_value(s: &str) -> bool {
-    for c in s.chars() {
-        if !c.is_alphabetic() && c != Value::EMPTY && c != Value::SPECIAL {
-            return false;
+    if s == Value::EMPTY || s == Value::SPECIAL {
+        return true;
+    } else {
+        for c in s.chars() {
+            if !c.is_alphabetic() {
+                return false;
+            }
         }
+        return true;
     }
-    true
 }
 
 mod tests {

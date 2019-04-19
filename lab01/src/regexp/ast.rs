@@ -28,12 +28,12 @@ impl FromStr for AbstractSyntaxTree {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         Ok(AbstractSyntaxTree {
-            root: make_tree(&make_rpn(s)?)?,
+            root: make_tree(make_rpn(s)?)?,
         })
     }
 }
 
-#[derive(PartialEq, Clone, Copy, Debug)]
+#[derive(PartialEq, Clone, Debug)]
 enum Symbol {
     Value(vals::Value),
     Operator(ops::Operator),
@@ -133,10 +133,10 @@ fn make_rpn(s: &str) -> Result<Queue<Symbol>, errs::ParseExpError> {
     Ok(symbols)
 }
 
-#[derive(PartialEq, Clone, Copy, Debug)]
+#[derive(PartialEq, Clone, Debug)]
 struct TreeNode(usize, Symbol);
 
-fn make_tree(symbols: &Queue<Symbol>) -> Result<tree::BinTree<TreeNode>, errs::ParseExpError> {
+fn make_tree(symbols: Queue<Symbol>) -> Result<tree::BinTree<TreeNode>, errs::ParseExpError> {
     let mut stack = Stack::new();
 
     let mut index = 0usize;
@@ -146,13 +146,13 @@ fn make_tree(symbols: &Queue<Symbol>) -> Result<tree::BinTree<TreeNode>, errs::P
 
         match symbol {
             Symbol::Value(value) => {
-                stack.push(tree::BinTree::from_element(TreeNode(index, *symbol)));
+                stack.push(tree::BinTree::from_element(TreeNode(index, symbol.clone())));
             }
 
             Symbol::Operator(operator) => {
                 if operator.is_unary() {
                     let node = tree::BinTree::from(
-                        TreeNode(index, *symbol),
+                        TreeNode(index, symbol.clone()),
                         stack.pop().unwrap(),
                         tree::BinTree::Empty,
                     );
@@ -161,7 +161,8 @@ fn make_tree(symbols: &Queue<Symbol>) -> Result<tree::BinTree<TreeNode>, errs::P
                     let right_node = stack.pop().unwrap();
                     let left_node = stack.pop().unwrap();
 
-                    let node = tree::BinTree::from(TreeNode(index, *symbol), left_node, right_node);
+                    let node =
+                        tree::BinTree::from(TreeNode(index, symbol.clone()), left_node, right_node);
 
                     stack.push(node);
                 } else {
@@ -304,7 +305,7 @@ mod tests {
         )];
 
         for case in cases {
-            assert_eq!(super::make_tree(&case.0).unwrap(), case.1);
+            assert_eq!(super::make_tree(case.0).unwrap(), case.1);
         }
     }
 }
