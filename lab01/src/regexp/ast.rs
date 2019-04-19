@@ -278,7 +278,7 @@ fn make_params_tree(syntax_tree: &tree::BinTree<TreeNode>) -> tree::BinTree<Para
                                     tree::BinTree::from(
                                         params,
                                         tree::BinTree::NonEmpty(left_node),
-                                        tree::BinTree::Empty,
+                                        tree::BinTree::NonEmpty(right_node),
                                     )
                                 }
                                 _ => unreachable!(),
