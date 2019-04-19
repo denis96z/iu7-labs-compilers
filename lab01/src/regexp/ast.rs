@@ -64,7 +64,7 @@ fn make_rpn(s: &str) -> Result<Queue<Symbol>, errs::ParseExpError> {
             } else if operator.is_closing_parenthesis() {
                 while !operators.is_empty() {
                     let top = operators.pop().unwrap();
-                    if top.symbol() == ops::Operator::OPENING_PARENTHESIS {
+                    if top == ops::OPENING_PARENTHESIS {
                         break;
                     }
                     symbols.push_back(Symbol::Operator(top));
