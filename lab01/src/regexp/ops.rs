@@ -39,21 +39,21 @@ pub const CONCATENATION: Operator = Operator {
     associativity: Associativity::Left,
 };
 
-pub const COMBINATION: Operator = Operator {
+pub const ALTERATION: Operator = Operator {
     symbol: "|",
     priority: Priority(1),
     associativity: Associativity::Left,
 };
 
-pub const ITERATION: Operator = Operator {
+pub const CLOSURE: Operator = Operator {
     symbol: "*",
     priority: Priority(3),
     associativity: Associativity::Right,
 };
 
-pub const UNARY_OPERATORS: [&'static Operator; 1] = [&ITERATION];
+pub const UNARY_OPERATORS: [&'static Operator; 1] = [&CLOSURE];
 
-pub const BINARY_OPERATORS: [&'static Operator; 2] = [&CONCATENATION, &COMBINATION];
+pub const BINARY_OPERATORS: [&'static Operator; 2] = [&CONCATENATION, &ALTERATION];
 
 impl Operator {
     pub fn from_valid_str(s: &str) -> Self {
@@ -171,14 +171,14 @@ mod tests {
 
     #[test]
     fn operator_from_str() {
-        assert_eq!(Operator::from_str(ITERATION.symbol()).is_ok(), true);
+        assert_eq!(Operator::from_str(CLOSURE.symbol()).is_ok(), true);
         assert_eq!(Operator::from_str("").is_err(), true);
     }
 
     #[test]
     fn operator_cmp() {
-        assert_eq!(COMBINATION < CONCATENATION, true);
-        assert_eq!(ITERATION > CONCATENATION, true);
-        assert_eq!(ITERATION == ITERATION, true);
+        assert_eq!(ALTERATION < CONCATENATION, true);
+        assert_eq!(CLOSURE > CONCATENATION, true);
+        assert_eq!(CLOSURE == CLOSURE, true);
     }
 }

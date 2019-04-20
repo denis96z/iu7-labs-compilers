@@ -79,7 +79,7 @@ mod tests {
     #[test]
     fn test_value_from_str() {
         assert_eq!(Value::from_str("a").is_ok(), true);
-        assert_eq!(Value::from_str(ops::ITERATION.symbol()).is_err(), true);
+        assert_eq!(Value::from_str(ops::CLOSURE.symbol()).is_err(), true);
         assert_eq!(Value::from_str("").is_err(), true);
     }
 

@@ -224,7 +224,7 @@ fn make_params_tree(syntax_tree: &trees::BinTree<TreeNode>) -> trees::BinTree<Pa
         }),
 
         Symbol::Operator(operator) => {
-            if *operator == ops::ITERATION {
+            if *operator == ops::CLOSURE {
                 match make_params_tree(&current_node.left_tree) {
                     trees::BinTree::NonEmpty(left_node) => {
                         let params = Params {
@@ -241,7 +241,7 @@ fn make_params_tree(syntax_tree: &trees::BinTree<TreeNode>) -> trees::BinTree<Pa
                     }
                     _ => unreachable!(),
                 }
-            } else if *operator == ops::CONCATENATION || *operator == ops::COMBINATION {
+            } else if *operator == ops::CONCATENATION || *operator == ops::ALTERATION {
                 match make_params_tree(&current_node.left_tree) {
                     trees::BinTree::NonEmpty(left_node) => {
                         match make_params_tree(&current_node.right_tree) {
@@ -333,7 +333,7 @@ fn add_follow_pos(
                 };
                 cur_params_node.element.follow_pos =
                     make_sets_union(&right_node.element.first_pos, &left_node.element.last_pos);
-            } else if *operator == ops::ITERATION {
+            } else if *operator == ops::CLOSURE {
                 cur_params_node.element.follow_pos =
                     make_sets_union(&left_node.element.first_pos, &left_node.element.last_pos);
             }
@@ -395,11 +395,11 @@ mod tests {
                 vec![
                     Symbol::from_value_str("a").unwrap(),
                     Symbol::from_value_str("b").unwrap(),
-                    Symbol::Operator(ops::COMBINATION),
+                    Symbol::Operator(ops::ALTERATION),
                     Symbol::from_value_str("c").unwrap(),
                     Symbol::Operator(ops::CONCATENATION),
                     Symbol::from_value_str("d").unwrap(),
-                    Symbol::Operator(ops::COMBINATION),
+                    Symbol::Operator(ops::ALTERATION),
                     Symbol::from_value_str(vals::Value::SPECIAL).unwrap(),
                     Symbol::Operator(ops::CONCATENATION),
                 ]
@@ -410,13 +410,13 @@ mod tests {
                 "(a*b|cd)#",
                 vec![
                     Symbol::from_value_str("a").unwrap(),
-                    Symbol::Operator(ops::ITERATION),
+                    Symbol::Operator(ops::CLOSURE),
                     Symbol::from_value_str("b").unwrap(),
                     Symbol::Operator(ops::CONCATENATION),
                     Symbol::from_value_str("c").unwrap(),
                     Symbol::from_value_str("d").unwrap(),
                     Symbol::Operator(ops::CONCATENATION),
-                    Symbol::Operator(ops::COMBINATION),
+                    Symbol::Operator(ops::ALTERATION),
                     Symbol::from_value_str(vals::Value::SPECIAL).unwrap(),
                     Symbol::Operator(ops::CONCATENATION),
                 ]
@@ -435,13 +435,13 @@ mod tests {
         let cases = vec![(
             vec![
                 Symbol::from_value_str("a").unwrap(),
-                Symbol::Operator(ops::ITERATION),
+                Symbol::Operator(ops::CLOSURE),
                 Symbol::from_value_str("b").unwrap(),
                 Symbol::Operator(ops::CONCATENATION),
                 Symbol::from_value_str("c").unwrap(),
                 Symbol::from_value_str("d").unwrap(),
                 Symbol::Operator(ops::CONCATENATION),
-                Symbol::Operator(ops::COMBINATION),
+                Symbol::Operator(ops::ALTERATION),
                 Symbol::from_value_str(vals::Value::SPECIAL).unwrap(),
                 Symbol::Operator(ops::CONCATENATION),
             ]
@@ -450,11 +450,11 @@ mod tests {
             trees::BinTree::from(
                 TreeNode(10, Symbol::Operator(ops::CONCATENATION)),
                 trees::BinTree::from(
-                    TreeNode(8, Symbol::Operator(ops::COMBINATION)),
+                    TreeNode(8, Symbol::Operator(ops::ALTERATION)),
                     trees::BinTree::from(
                         TreeNode(4, Symbol::Operator(ops::CONCATENATION)),
                         trees::BinTree::from_element_with_left(
-                            TreeNode(2, Symbol::Operator(ops::ITERATION)),
+                            TreeNode(2, Symbol::Operator(ops::CLOSURE)),
                             TreeNode(1, Symbol::from_value_str("a").unwrap()),
                         ),
                         trees::BinTree::from_element(TreeNode(
