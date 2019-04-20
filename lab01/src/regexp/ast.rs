@@ -187,7 +187,7 @@ fn make_tree(symbols: Queue<Symbol>) -> Result<tree::BinTree<TreeNode>, errs::Pa
 }
 
 #[derive(PartialEq, Eq, Debug)]
-struct Params {
+pub struct Params {
     pub is_nullable: bool,
     pub first_pos: Set<usize>,
     pub last_pos: Set<usize>,
