@@ -1,5 +1,5 @@
 mod fsm;
 mod regexp;
-mod tree;
+mod trees;
 
 fn main() {}
