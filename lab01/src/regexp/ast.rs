@@ -1,6 +1,7 @@
 use std::collections::HashSet;
 use std::collections::VecDeque;
 use std::error::Error;
+use std::hash::Hash;
 use std::str::FromStr;
 
 use crate::tree;
@@ -188,11 +189,6 @@ struct Params {
 }
 
 fn make_params_tree(syntax_tree: &tree::BinTree<TreeNode>) -> tree::BinTree<Params> {
-    let make_empty_set = || vec![].into_iter().collect::<Set<_>>();
-    let make_set_from_vec = |v: Vec<_>| v.into_iter().collect::<Set<_>>();
-    let make_sets_union =
-        |s1: &Set<_>, s2: &Set<_>| s1.union(&s2).into_iter().cloned().collect::<Set<_>>();
-
     if syntax_tree.is_empty() {
         return tree::BinTree::from_element(Params {
             is_nullable: true,
@@ -306,7 +302,55 @@ fn add_follow_pos(syntax_tree: &tree::BinTree<TreeNode>, params_tree: &mut tree:
         _ => unreachable!(),
     };
 
-    unimplemented!()
+    match cur_syntax_node.element.1 {
+        Symbol::Operator(ref operator) => {
+            let left_node = match cur_params_node.left_tree {
+                tree::BinTree::NonEmpty(ref node) => node,
+                _ => unreachable!(),
+            };
+
+            if *operator == ops::CONCATENATION {
+                let right_node = match cur_params_node.right_tree {
+                    tree::BinTree::NonEmpty(ref node) => node,
+                    _ => unreachable!(),
+                };
+                cur_params_node.element.follow_pos =
+                    make_sets_union(&right_node.element.first_pos, &left_node.element.last_pos);
+            } else if *operator == ops::ITERATION {
+                cur_params_node.element.follow_pos =
+                    make_sets_union(&left_node.element.first_pos, &left_node.element.last_pos);
+            }
+
+            add_follow_pos(&cur_syntax_node.left_tree, &mut cur_params_node.left_tree);
+
+            if operator.is_binary() {
+                add_follow_pos(&cur_syntax_node.right_tree, &mut cur_params_node.right_tree);
+            }
+        }
+
+        _ => {}
+    };
+}
+
+fn make_empty_set<T>() -> Set<T>
+where
+    T: Eq + Hash,
+{
+    vec![].into_iter().collect::<Set<T>>()
+}
+
+fn make_set_from_vec<T>(v: Vec<T>) -> Set<T>
+where
+    T: Eq + Hash,
+{
+    v.into_iter().collect::<Set<T>>()
+}
+
+fn make_sets_union<T>(s1: &Set<T>, s2: &Set<T>) -> Set<T>
+where
+    T: Eq + Hash + Clone,
+{
+    s1.union(&s2).into_iter().cloned().collect::<Set<T>>()
 }
 
 mod tests {
@@ -429,7 +473,8 @@ mod tests {
     fn make_params_tree() {
         let rpn = super::make_rpn("((a|b)*abb)#").unwrap();
         let tree = super::make_tree(rpn).unwrap();
-        let p_tree = super::make_params_tree(&tree);
+        let mut p_tree = super::make_params_tree(&tree);
+        super::add_follow_pos(&tree, &mut p_tree);
         dbg!(&p_tree);
     }
 }
