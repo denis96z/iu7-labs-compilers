@@ -1,15 +1,18 @@
-use std::str::FromStr;
-
 pub mod ast;
 pub mod errs;
 pub mod ops;
 pub mod types;
 pub mod vals;
 
+use std::str::FromStr;
+
+use crate::tree;
+
 #[derive(PartialEq, Clone, Debug)]
 pub struct RegExp {
     s: String,
-    tree: ast::AbstractSyntaxTree,
+    syntax_tree: ast::AbstractSyntaxTree,
+    params_tree: tree::BinTree<ast::Params>,
 }
 
 impl RegExp {
@@ -17,8 +20,12 @@ impl RegExp {
         &self.s
     }
 
-    pub fn tree(&self) -> &ast::AbstractSyntaxTree {
-        &self.tree
+    pub fn syntax_tree(&self) -> &ast::AbstractSyntaxTree {
+        &self.syntax_tree
+    }
+
+    pub fn params_tree(&self) -> &tree::BinTree<ast::Params> {
+        &self.params_tree
     }
 }
 
@@ -26,9 +33,11 @@ impl FromStr for RegExp {
     type Err = errs::ParseExpError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let t = ast::AbstractSyntaxTree::from_str(s)?;
         Ok(RegExp {
             s: s.to_string(),
-            tree: ast::AbstractSyntaxTree::from_str(s)?,
+            syntax_tree: t,
+            params_tree: t.params_tree(),
         })
     }
 }
