@@ -21,6 +21,10 @@ impl AbstractSyntaxTree {
         }
     }
 
+    pub fn root(&self) -> &trees::BinTree<TreeNode> {
+        &self.root
+    }
+
     pub fn params_tree(&self) -> trees::BinTree<Params> {
         let mut t = make_params_tree(&self.root);
         add_follow_pos(&self.root, &mut t);
@@ -39,7 +43,7 @@ impl FromStr for AbstractSyntaxTree {
 }
 
 #[derive(PartialEq, Clone, Debug)]
-enum Symbol {
+pub enum Symbol {
     Value(vals::Value),
     Operator(ops::Operator),
 }
@@ -145,7 +149,7 @@ fn make_rpn(s: &str) -> Result<Queue<Symbol>, errs::ParseExpError> {
 }
 
 #[derive(PartialEq, Clone, Debug)]
-struct TreeNode(usize, Symbol);
+pub struct TreeNode(pub usize, pub Symbol);
 
 fn make_tree(symbols: Queue<Symbol>) -> Result<trees::BinTree<TreeNode>, errs::ParseExpError> {
     let mut stack = Stack::new();
