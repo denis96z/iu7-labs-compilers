@@ -248,7 +248,8 @@ fn make_params_tree(syntax_tree: &trees::BinTree<TreeNode>) -> trees::BinTree<Pa
                             trees::BinTree::NonEmpty(right_node) => {
                                 let params = if *operator == ops::CONCATENATION {
                                     Params {
-                                        is_nullable: true,
+                                        is_nullable: left_node.element.is_nullable
+                                            && right_node.element.is_nullable,
                                         first_pos: if left_node.element.is_nullable {
                                             make_sets_union(
                                                 &left_node.element.first_pos,
@@ -269,7 +270,8 @@ fn make_params_tree(syntax_tree: &trees::BinTree<TreeNode>) -> trees::BinTree<Pa
                                     }
                                 } else {
                                     Params {
-                                        is_nullable: true,
+                                        is_nullable: left_node.element.is_nullable
+                                            || right_node.element.is_nullable,
                                         first_pos: make_sets_union(
                                             &left_node.element.first_pos,
                                             &right_node.element.first_pos,
@@ -349,21 +351,21 @@ fn add_follow_pos(
 
 fn make_empty_set<T>() -> Set<T>
 where
-    T: Eq + Hash,
+    T: Eq + Hash + Ord,
 {
     vec![].into_iter().collect::<Set<T>>()
 }
 
 fn make_set_from_vec<T>(v: Vec<T>) -> Set<T>
 where
-    T: Eq + Hash,
+    T: Eq + Hash + Ord,
 {
     v.into_iter().collect::<Set<T>>()
 }
 
 fn make_sets_union<T>(s1: &Set<T>, s2: &Set<T>) -> Set<T>
 where
-    T: Eq + Hash + Clone,
+    T: Eq + Hash + Ord + Clone,
 {
     s1.union(&s2).into_iter().cloned().collect::<Set<T>>()
 }
@@ -481,6 +483,63 @@ mod tests {
 
         for case in cases {
             assert_eq!(super::make_tree(case.0).unwrap(), case.1);
+        }
+    }
+
+    #[test]
+    fn make_params_tree() {
+        let cases = vec![(
+            "((a|b)*)#",
+            trees::BinTree::from(
+                Params {
+                    is_nullable: false,
+                    first_pos: make_set_from_vec(vec![1, 2, 5]),
+                    last_pos: make_set_from_vec(vec![5]),
+                    follow_pos: make_set_from_vec(vec![1, 2, 5]),
+                },
+                trees::BinTree::from(
+                    Params {
+                        is_nullable: true,
+                        first_pos: make_set_from_vec(vec![1, 2]),
+                        last_pos: make_set_from_vec(vec![1, 2]),
+                        follow_pos: make_set_from_vec(vec![1, 2]),
+                    },
+                    trees::BinTree::from(
+                        Params {
+                            is_nullable: false,
+                            first_pos: make_set_from_vec(vec![1, 2]),
+                            last_pos: make_set_from_vec(vec![1, 2]),
+                            follow_pos: make_empty_set(),
+                        },
+                        trees::BinTree::from_element(Params {
+                            is_nullable: false,
+                            first_pos: make_set_from_vec(vec![1]),
+                            last_pos: make_set_from_vec(vec![1]),
+                            follow_pos: make_empty_set(),
+                        }),
+                        trees::BinTree::from_element(Params {
+                            is_nullable: false,
+                            first_pos: make_set_from_vec(vec![2]),
+                            last_pos: make_set_from_vec(vec![2]),
+                            follow_pos: make_empty_set(),
+                        }),
+                    ),
+                    trees::BinTree::Empty,
+                ),
+                trees::BinTree::from_element(Params {
+                    is_nullable: false,
+                    first_pos: make_set_from_vec(vec![5]),
+                    last_pos: make_set_from_vec(vec![5]),
+                    follow_pos: make_empty_set(),
+                }),
+            ),
+        )];
+
+        for case in cases {
+            assert_eq!(
+                AbstractSyntaxTree::from_str(case.0).unwrap().params_tree(),
+                case.1
+            )
         }
     }
 
