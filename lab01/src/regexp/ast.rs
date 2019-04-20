@@ -20,6 +20,12 @@ impl AbstractSyntaxTree {
             root: tree::BinTree::new(),
         }
     }
+
+    pub fn params_tree(&self) -> tree::BinTree<Params> {
+        let mut t = make_params_tree(&self.root);
+        add_follow_pos(&self.root, &mut t);
+        return t;
+    }
 }
 
 impl FromStr for AbstractSyntaxTree {
