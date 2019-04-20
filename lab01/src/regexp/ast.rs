@@ -476,11 +476,8 @@ mod tests {
     }
 
     #[test]
-    fn make_params_tree() {
-        let rpn = super::make_rpn("((a|b)*abb)#").unwrap();
-        let tree = super::make_tree(rpn).unwrap();
-        let mut p_tree = super::make_params_tree(&tree);
-        super::add_follow_pos(&tree, &mut p_tree);
-        dbg!(&p_tree);
+    fn tree_params() {
+        let t = AbstractSyntaxTree::from_str("((a|b)*abb)#").unwrap();
+        t.params_tree();
     }
 }
