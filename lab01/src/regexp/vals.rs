@@ -1,10 +1,5 @@
-use std::cmp::Ordering;
-use std::error::Error;
-use std::str::FromStr;
-
-use super::errs;
-use super::ops;
-use super::types;
+use super::{errs, types};
+use std::{cmp::Ordering, error::Error, str::FromStr};
 
 #[derive(Clone, Debug)]
 pub struct Value {
@@ -75,6 +70,7 @@ pub fn is_value(s: &str) -> bool {
 
 mod tests {
     use super::*;
+    use crate::regexp::ops;
 
     #[test]
     fn test_value_from_str() {

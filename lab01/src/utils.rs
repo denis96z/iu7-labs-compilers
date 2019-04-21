@@ -1,6 +1,5 @@
-use std::hash::Hash;
-
 use crate::types;
+use std::hash::Hash;
 
 pub fn make_empty_set<T>() -> types::Set<T>
 where

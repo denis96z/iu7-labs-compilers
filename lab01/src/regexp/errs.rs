@@ -1,6 +1,7 @@
-use std::error::Error;
-use std::fmt::Result as FmtResult;
-use std::fmt::{Display, Formatter};
+use std::{
+    error::Error,
+    fmt::{Display, Formatter, Result as FmtResult},
+};
 
 #[derive(PartialEq, Eq, Clone, Debug)]
 pub struct ParseExpError {

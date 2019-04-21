@@ -1,9 +1,5 @@
-use std::cmp::Ordering;
-use std::error::Error;
-use std::str::FromStr;
-
-use super::errs;
-use super::types;
+use super::{errs, types};
+use std::{cmp::Ordering, error::Error, str::FromStr};
 
 #[derive(Clone, Debug)]
 pub struct Operator {

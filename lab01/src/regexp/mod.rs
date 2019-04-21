@@ -4,9 +4,8 @@ pub mod ops;
 pub mod types;
 pub mod vals;
 
-use std::str::FromStr;
-
 use crate::trees;
+use std::str::FromStr;
 
 #[derive(PartialEq, Clone, Debug)]
 pub struct RegExp {
