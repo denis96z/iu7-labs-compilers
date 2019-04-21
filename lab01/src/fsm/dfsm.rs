@@ -28,7 +28,7 @@ struct Transition {
     symbol: vals::Value,
 }
 
-fn extract_values_positions<'a>(
+fn extract_values<'a>(
     syntax_tree: &'a trees::BinTree<ast::TreeNode>,
     params_tree: &'a trees::BinTree<ast::Params>,
 ) -> Vec<(usize, &'a vals::Value, &'a types::Set<usize>)> {
@@ -46,11 +46,11 @@ fn extract_values_positions<'a>(
             )],
             ast::Symbol::Operator(ref operator) => {
                 if operator.is_unary() {
-                    extract_values_positions(&syntax_node.left_tree, &params_node.left_tree)
+                    extract_values(&syntax_node.left_tree, &params_node.left_tree)
                 } else if operator.is_binary() {
                     merge_vectors(
-                        extract_values_positions(&syntax_node.left_tree, &params_node.left_tree),
-                        extract_values_positions(&syntax_node.right_tree, &params_node.right_tree),
+                        extract_values(&syntax_node.left_tree, &params_node.left_tree),
+                        extract_values(&syntax_node.right_tree, &params_node.right_tree),
                     )
                 } else {
                     unreachable!()
@@ -72,7 +72,7 @@ mod tests {
     use std::str::FromStr;
 
     #[test]
-    fn extract_values_positions() {
+    fn extract_values() {
         let cases = vec![(
             "((a|b)*)#",
             vec![
@@ -96,7 +96,7 @@ mod tests {
             let t = r.syntax_tree();
             let p = r.params_tree();
 
-            let actual = super::extract_values_positions(t.root(), p);
+            let actual = super::extract_values(t.root(), p);
             let expected = case
                 .1
                 .iter()
