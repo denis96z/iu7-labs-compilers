@@ -4,7 +4,7 @@ use std::{error::Error, hash::Hash, str::FromStr};
 
 #[derive(PartialEq, Clone, Debug)]
 pub struct AbstractSyntaxTree {
-    root: trees::BinTree<TreeNode>,
+    pub(self) root: trees::BinTree<TreeNode>,
 }
 
 impl AbstractSyntaxTree {
@@ -12,10 +12,6 @@ impl AbstractSyntaxTree {
         AbstractSyntaxTree {
             root: trees::BinTree::new(),
         }
-    }
-
-    pub fn root(&self) -> &trees::BinTree<TreeNode> {
-        &self.root
     }
 
     pub fn params_tree(&self) -> trees::BinTree<Params> {
@@ -388,6 +384,39 @@ fn add_follow_pos(
     };
 }
 
+fn extract_values<'a>(
+    syntax_tree: &'a trees::BinTree<TreeNode>,
+    params_tree: &'a trees::BinTree<Params>,
+) -> Vec<(usize, &'a vals::Value, &'a types::Set<usize>)> {
+    let params_node = match params_tree {
+        trees::BinTree::NonEmpty(ref node) => node,
+        _ => unreachable!(),
+    };
+
+    match syntax_tree {
+        trees::BinTree::NonEmpty(ref syntax_node) => match syntax_node.element.1 {
+            Symbol::Value(ref value) => vec![(
+                syntax_node.element.0,
+                value,
+                &params_node.element.follow_pos,
+            )],
+            Symbol::Operator(ref operator) => {
+                if operator.is_unary() {
+                    extract_values(&syntax_node.left_tree, &params_node.left_tree)
+                } else if operator.is_binary() {
+                    utils::merge_vectors(
+                        extract_values(&syntax_node.left_tree, &params_node.left_tree),
+                        extract_values(&syntax_node.right_tree, &params_node.right_tree),
+                    )
+                } else {
+                    unreachable!()
+                }
+            }
+        },
+        _ => unreachable!(),
+    }
+}
+
 mod tests {
     use super::*;
 
@@ -561,8 +590,36 @@ mod tests {
     }
 
     #[test]
-    fn tree_params() {
-        let t = AbstractSyntaxTree::from_str("((a|b)*abb)#").unwrap();
-        t.params_tree();
+    fn extract_values() {
+        let cases = vec![(
+            "((a|b)*)#",
+            vec![
+                (
+                    1,
+                    vals::Value::from_valid_str("a"),
+                    utils::make_set_from_vec(vec![1, 2, 5]),
+                ),
+                (
+                    2,
+                    vals::Value::from_valid_str("b"),
+                    utils::make_set_from_vec(vec![1, 2, 5]),
+                ),
+                (5, vals::Value::from_valid_str("#"), utils::make_empty_set()),
+            ],
+        )];
+
+        for case in &cases {
+            let t = AbstractSyntaxTree::from_str(case.0).unwrap();
+            let p = t.params_tree();
+
+            let actual = super::extract_values(&t.root, &p);
+            let expected = case
+                .1
+                .iter()
+                .map(|x| (x.0 as usize, &x.1, &x.2))
+                .collect::<Vec<_>>();
+
+            assert_eq!(actual, expected);
+        }
     }
 }

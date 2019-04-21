@@ -24,3 +24,8 @@ where
         .cloned()
         .collect::<types::Set<T>>()
 }
+
+pub fn merge_vectors<T>(mut v1: Vec<T>, mut v2: Vec<T>) -> Vec<T> {
+    v1.append(&mut v2);
+    return v1;
+}
