@@ -1,4 +1,4 @@
-use std::{cmp::Ordering, error::Error, str::FromStr};
+use std::{cmp::Ordering, str::FromStr};
 
 use super::{errs, types};
 

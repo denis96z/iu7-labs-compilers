@@ -1,4 +1,4 @@
-use std::{cmp::Ordering, error::Error, str::FromStr};
+use std::{cmp::Ordering, str::FromStr};
 
 use crate::types;
 
@@ -133,8 +133,8 @@ impl FromStr for Operator {
 }
 
 pub fn is_operator(s: &str) -> bool {
-    s == OPENING_PARENTHESIS.symbol
-        || s == CLOSING_PARENTHESIS.symbol
+    is_opening_parenthesis(s)
+        || is_closing_parenthesis(s)
         || is_unary_operator(s)
         || is_binary_operator(s)
 }

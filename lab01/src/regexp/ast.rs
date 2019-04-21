@@ -1,4 +1,4 @@
-use std::{error::Error, hash::Hash, str::FromStr};
+use std::str::FromStr;
 
 use crate::{trees, types, utils};
 
@@ -154,7 +154,7 @@ fn make_tree(
         index += 1;
 
         match symbol {
-            Symbol::Value(value) => {
+            Symbol::Value(_) => {
                 stack.push(trees::BinTree::from_element(TreeNode(
                     index,
                     symbol.clone(),
@@ -214,7 +214,7 @@ fn make_params_tree(syntax_tree: &trees::BinTree<TreeNode>) -> trees::BinTree<Pa
     };
 
     match &current_node.element.1 {
-        Symbol::Value(value) => trees::BinTree::from_element(Params {
+        Symbol::Value(_) => trees::BinTree::from_element(Params {
             is_nullable: false,
             first_pos: utils::make_set_from_vec(vec![current_node.element.0]),
             last_pos: utils::make_set_from_vec(vec![current_node.element.0]),
@@ -320,7 +320,7 @@ fn add_follow_pos(
     };
 
     match cur_syntax_node.element.1 {
-        Symbol::Value(ref value) => {
+        Symbol::Value(_) => {
             cur_params_node.element.follow_pos = right_follow_pos.clone();
         }
 
