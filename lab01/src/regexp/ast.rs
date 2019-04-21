@@ -27,7 +27,8 @@ impl AbstractSyntaxTree {
 
     pub fn params_tree(&self) -> trees::BinTree<Params> {
         let mut t = make_params_tree(&self.root);
-        add_follow_pos(&mut t, &self.root, &make_empty_set());
+        let empty_set = make_empty_set();
+        add_follow_pos(&mut t, &self.root, &empty_set, &empty_set);
         return t;
     }
 }
@@ -309,7 +310,8 @@ fn make_params_tree(syntax_tree: &trees::BinTree<TreeNode>) -> trees::BinTree<Pa
 fn add_follow_pos(
     params_tree: &mut trees::BinTree<Params>,
     syntax_tree: &trees::BinTree<TreeNode>,
-    parent_follow_pos: &Set<usize>,
+    left_follow_pos: &Set<usize>,
+    right_follow_pos: &Set<usize>,
 ) {
     if syntax_tree.is_empty() {
         return;
@@ -326,7 +328,7 @@ fn add_follow_pos(
 
     match cur_syntax_node.element.1 {
         Symbol::Value(ref value) => {
-            cur_params_node.element.follow_pos = parent_follow_pos.clone();
+            cur_params_node.element.follow_pos = right_follow_pos.clone();
         }
 
         Symbol::Operator(ref operator) => {
@@ -341,43 +343,46 @@ fn add_follow_pos(
                     _ => unreachable!(),
                 };
 
-                cur_params_node.element.follow_pos = make_sets_union(
-                    &parent_follow_pos,
-                    &make_sets_union(&right_node.element.first_pos, &left_node.element.last_pos),
-                );
+                cur_params_node.element.follow_pos =
+                    make_sets_union(&right_node.element.first_pos, &left_node.element.last_pos);
 
                 add_follow_pos(
                     &mut cur_params_node.left_tree,
                     &cur_syntax_node.left_tree,
                     &cur_params_node.element.follow_pos,
+                    &cur_params_node.element.last_pos,
                 );
                 add_follow_pos(
                     &mut cur_params_node.right_tree,
                     &cur_syntax_node.right_tree,
-                    &make_empty_set(),
+                    &cur_params_node.element.follow_pos,
+                    &right_follow_pos,
                 );
             } else if *operator == ops::ALTERATION {
-                cur_params_node.element.follow_pos = parent_follow_pos.clone();
+                cur_params_node.element.follow_pos = left_follow_pos.clone();
 
                 add_follow_pos(
                     &mut cur_params_node.left_tree,
                     &cur_syntax_node.left_tree,
                     &cur_params_node.element.follow_pos,
+                    &cur_params_node.element.follow_pos,
                 );
                 add_follow_pos(
                     &mut cur_params_node.right_tree,
                     &cur_syntax_node.right_tree,
+                    &cur_params_node.element.follow_pos,
                     &cur_params_node.element.follow_pos,
                 );
             } else if *operator == ops::CLOSURE {
                 cur_params_node.element.follow_pos = make_sets_union(
-                    &parent_follow_pos,
+                    &left_follow_pos,
                     &make_sets_union(&left_node.element.first_pos, &left_node.element.last_pos),
                 );
 
                 add_follow_pos(
                     &mut cur_params_node.left_tree,
                     &cur_syntax_node.left_tree,
+                    &cur_params_node.element.follow_pos,
                     &cur_params_node.element.follow_pos,
                 );
             } else {
@@ -574,10 +579,9 @@ mod tests {
         )];
 
         for case in cases {
-            assert_eq!(
-                AbstractSyntaxTree::from_str(case.0).unwrap().params_tree(),
-                case.1
-            )
+            let t = AbstractSyntaxTree::from_str(case.0).unwrap();
+            let p = t.params_tree();
+            assert_eq!(p, case.1)
         }
     }
 
