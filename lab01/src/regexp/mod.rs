@@ -36,11 +36,25 @@ impl FromStr for RegExp {
     type Err = errs::ParseExpError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let t = ast::AbstractSyntaxTree::from_str(s)?;
+        let augmented_regexp = augment_regexp(s);
+        let t = ast::AbstractSyntaxTree::from_str(&augmented_regexp)?;
         Ok(RegExp {
-            s: s.to_string(),
+            s: augmented_regexp,
             params_tree: t.make_params_tree(),
             syntax_tree: t,
         })
+    }
+}
+
+fn augment_regexp(s: &str) -> String {
+    format!("({})#", s)
+}
+
+mod tests {
+    use super::*;
+
+    #[test]
+    fn augment_regexp() {
+        assert_eq!(super::augment_regexp("abc"), "(abc)#");
     }
 }
