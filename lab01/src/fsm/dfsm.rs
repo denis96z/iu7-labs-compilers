@@ -67,18 +67,26 @@ fn merge_vectors<T>(mut v1: Vec<T>, mut v2: Vec<T>) -> Vec<T> {
 }
 
 mod tests {
-    use std::str::FromStr;
-
     use super::*;
+    use crate::utils;
+    use std::str::FromStr;
 
     #[test]
     fn extract_values_positions() {
         let cases = vec![(
             "((a|b)*)#",
             vec![
-                (1usize, vals::Value::from_valid_str("a")),
-                (2usize, vals::Value::from_valid_str("b")),
-                (5usize, vals::Value::from_valid_str("#")),
+                (
+                    1,
+                    vals::Value::from_valid_str("a"),
+                    utils::make_set_from_vec(vec![1, 2, 5]),
+                ),
+                (
+                    2,
+                    vals::Value::from_valid_str("b"),
+                    utils::make_set_from_vec(vec![1, 2, 5]),
+                ),
+                (5, vals::Value::from_valid_str("#"), utils::make_empty_set()),
             ],
         )];
 
@@ -89,7 +97,11 @@ mod tests {
             let p = r.params_tree();
 
             let actual = super::extract_values_positions(t.root(), p);
-            let expected = case.1.iter().map(|x| (x.0, &x.1)).collect::<Vec<_>>();
+            let expected = case
+                .1
+                .iter()
+                .map(|x| (x.0 as usize, &x.1, &x.2))
+                .collect::<Vec<_>>();
 
             assert_eq!(actual, expected);
         }
