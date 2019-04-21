@@ -1,6 +1,8 @@
 use std::{cmp::Ordering, error::Error, str::FromStr};
 
-use super::{errs, types};
+use crate::types;
+
+use super::errs;
 
 #[derive(Clone, Debug)]
 pub struct Operator {

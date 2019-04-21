@@ -1,11 +1,10 @@
 use std::str::FromStr;
 
-use crate::{trees, types as ctypes};
+use crate::{trees, types};
 
 pub mod ast;
 pub mod errs;
 pub mod ops;
-pub mod types;
 pub mod vals;
 
 #[derive(PartialEq, Clone, Debug)]
@@ -28,7 +27,7 @@ impl RegExp {
         &self.params_tree
     }
 
-    pub fn extract_values(&self) -> Vec<(usize, &vals::Value, &ctypes::Set<usize>)> {
+    pub fn extract_values(&self) -> Vec<(usize, &vals::Value, &types::Set<usize>)> {
         ast::extract_values(&self.syntax_tree.root(), &self.params_tree)
     }
 }
