@@ -20,7 +20,7 @@ impl AbstractSyntaxTree {
         &self.root
     }
 
-    pub fn params_tree(&self) -> trees::BinTree<Params> {
+    pub fn make_params_tree(&self) -> trees::BinTree<Params> {
         let mut t = make_params_tree(&self.root);
         let empty_set = utils::make_empty_set();
         add_follow_pos(&mut t, &self.root, &empty_set, &empty_set);
@@ -456,8 +456,8 @@ mod tests {
                     Symbol::from_value_str(vals::Value::SPECIAL).unwrap(),
                     Symbol::Operator(ops::CONCATENATION),
                 ]
-                    .into_iter()
-                    .collect::<types::Queue<_>>(),
+                .into_iter()
+                .collect::<types::Queue<_>>(),
             ),
             (
                 "(a*b|cd)#",
@@ -473,8 +473,8 @@ mod tests {
                     Symbol::from_value_str(vals::Value::SPECIAL).unwrap(),
                     Symbol::Operator(ops::CONCATENATION),
                 ]
-                    .into_iter()
-                    .collect::<types::Queue<_>>(),
+                .into_iter()
+                .collect::<types::Queue<_>>(),
             ),
         ];
 
@@ -498,8 +498,8 @@ mod tests {
                 Symbol::from_value_str(vals::Value::SPECIAL).unwrap(),
                 Symbol::Operator(ops::CONCATENATION),
             ]
-                .into_iter()
-                .collect::<types::Queue<_>>(),
+            .into_iter()
+            .collect::<types::Queue<_>>(),
             trees::BinTree::from(
                 TreeNode(10, Symbol::Operator(ops::CONCATENATION)),
                 trees::BinTree::from(
@@ -590,7 +590,7 @@ mod tests {
 
         for case in cases {
             let t = AbstractSyntaxTree::from_str(case.0).unwrap();
-            let p = t.params_tree();
+            let p = t.make_params_tree();
             assert_eq!(p, case.1)
         }
     }
@@ -616,7 +616,7 @@ mod tests {
 
         for case in &cases {
             let t = AbstractSyntaxTree::from_str(case.0).unwrap();
-            let p = t.params_tree();
+            let p = t.make_params_tree();
 
             let actual = super::extract_values(&t.root, &p);
             let expected = case

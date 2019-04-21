@@ -40,7 +40,7 @@ impl FromStr for RegExp {
         let t = ast::AbstractSyntaxTree::from_str(s)?;
         Ok(RegExp {
             s: s.to_string(),
-            params_tree: t.params_tree(),
+            params_tree: t.make_params_tree(),
             syntax_tree: t,
         })
     }
