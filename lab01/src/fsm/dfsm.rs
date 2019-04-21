@@ -1,8 +1,4 @@
-use crate::{
-    regexp,
-    regexp::{ast, vals},
-    trees, types,
-};
+use crate::{regexp, regexp::vals, types};
 
 pub struct DFSM<'a> {
     states: Vec<State>,

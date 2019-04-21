@@ -1,6 +1,8 @@
-use super::{errs, ops, vals};
-use crate::{trees, types, utils};
 use std::{error::Error, hash::Hash, str::FromStr};
+
+use crate::{trees, types, utils};
+
+use super::{errs, ops, vals};
 
 #[derive(PartialEq, Clone, Debug)]
 pub struct AbstractSyntaxTree {

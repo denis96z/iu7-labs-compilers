@@ -82,7 +82,7 @@ mod tests {
             TreeNode {
                 element: c,
                 left_tree: BinTree::Empty,
-                right_tree: BinTree::Empty
+                right_tree: BinTree::Empty,
             }
         )
     }
@@ -98,7 +98,7 @@ mod tests {
             TreeNode {
                 element: c,
                 left_tree: left,
-                right_tree: right
+                right_tree: right,
             }
         )
     }
