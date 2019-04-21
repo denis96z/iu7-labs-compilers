@@ -1,13 +1,6 @@
-use std::collections::HashSet;
-use std::collections::VecDeque;
-use std::error::Error;
-use std::hash::Hash;
-use std::str::FromStr;
-
-use crate::trees;
-
-use super::errs;
-use super::{ops, vals};
+use super::{errs, ops, vals};
+use crate::{trees, types, utils};
+use std::{error::Error, hash::Hash, str::FromStr};
 
 #[derive(PartialEq, Clone, Debug)]
 pub struct AbstractSyntaxTree {
@@ -27,7 +20,7 @@ impl AbstractSyntaxTree {
 
     pub fn params_tree(&self) -> trees::BinTree<Params> {
         let mut t = make_params_tree(&self.root);
-        let empty_set = make_empty_set();
+        let empty_set = utils::make_empty_set();
         add_follow_pos(&mut t, &self.root, &empty_set, &empty_set);
         return t;
     }
@@ -61,13 +54,9 @@ impl Symbol {
     }
 }
 
-type Stack<T> = Vec<T>;
-type Queue<T> = std::collections::VecDeque<T>;
-type Set<T> = std::collections::HashSet<T>;
-
-fn make_rpn(s: &str) -> Result<Queue<Symbol>, errs::ParseExpError> {
-    let mut operators = Stack::new();
-    let mut symbols = Queue::with_capacity(s.len());
+fn make_rpn(s: &str) -> Result<types::Queue<Symbol>, errs::ParseExpError> {
+    let mut operators = types::Stack::new();
+    let mut symbols = types::Queue::with_capacity(s.len());
 
     let mut h = |s: &str| {
         if ops::is_operator(s) {
@@ -152,8 +141,10 @@ fn make_rpn(s: &str) -> Result<Queue<Symbol>, errs::ParseExpError> {
 #[derive(PartialEq, Clone, Debug)]
 pub struct TreeNode(pub usize, pub Symbol);
 
-fn make_tree(symbols: Queue<Symbol>) -> Result<trees::BinTree<TreeNode>, errs::ParseExpError> {
-    let mut stack = Stack::new();
+fn make_tree(
+    symbols: types::Queue<Symbol>,
+) -> Result<trees::BinTree<TreeNode>, errs::ParseExpError> {
+    let mut stack = types::Stack::new();
 
     let mut index = 0usize;
 
@@ -200,18 +191,18 @@ fn make_tree(symbols: Queue<Symbol>) -> Result<trees::BinTree<TreeNode>, errs::P
 #[derive(PartialEq, Eq, Clone, Debug)]
 pub struct Params {
     pub is_nullable: bool,
-    pub first_pos: Set<usize>,
-    pub last_pos: Set<usize>,
-    pub follow_pos: Set<usize>,
+    pub first_pos: types::Set<usize>,
+    pub last_pos: types::Set<usize>,
+    pub follow_pos: types::Set<usize>,
 }
 
 fn make_params_tree(syntax_tree: &trees::BinTree<TreeNode>) -> trees::BinTree<Params> {
     if syntax_tree.is_empty() {
         return trees::BinTree::from_element(Params {
             is_nullable: true,
-            first_pos: make_empty_set(),
-            last_pos: make_empty_set(),
-            follow_pos: make_empty_set(),
+            first_pos: utils::make_empty_set(),
+            last_pos: utils::make_empty_set(),
+            follow_pos: utils::make_empty_set(),
         });
     }
 
@@ -223,9 +214,9 @@ fn make_params_tree(syntax_tree: &trees::BinTree<TreeNode>) -> trees::BinTree<Pa
     match &current_node.element.1 {
         Symbol::Value(value) => trees::BinTree::from_element(Params {
             is_nullable: false,
-            first_pos: make_set_from_vec(vec![current_node.element.0]),
-            last_pos: make_set_from_vec(vec![current_node.element.0]),
-            follow_pos: make_empty_set(),
+            first_pos: utils::make_set_from_vec(vec![current_node.element.0]),
+            last_pos: utils::make_set_from_vec(vec![current_node.element.0]),
+            follow_pos: utils::make_empty_set(),
         }),
 
         Symbol::Operator(operator) => {
@@ -236,7 +227,7 @@ fn make_params_tree(syntax_tree: &trees::BinTree<TreeNode>) -> trees::BinTree<Pa
                             is_nullable: true,
                             first_pos: left_node.element.first_pos.clone(),
                             last_pos: left_node.element.last_pos.clone(),
-                            follow_pos: make_empty_set(),
+                            follow_pos: utils::make_empty_set(),
                         };
                         trees::BinTree::from(
                             params,
@@ -256,7 +247,7 @@ fn make_params_tree(syntax_tree: &trees::BinTree<TreeNode>) -> trees::BinTree<Pa
                                         is_nullable: left_node.element.is_nullable
                                             && right_node.element.is_nullable,
                                         first_pos: if left_node.element.is_nullable {
-                                            make_sets_union(
+                                            utils::make_sets_union(
                                                 &left_node.element.first_pos,
                                                 &right_node.element.first_pos,
                                             )
@@ -264,28 +255,28 @@ fn make_params_tree(syntax_tree: &trees::BinTree<TreeNode>) -> trees::BinTree<Pa
                                             left_node.element.first_pos.clone()
                                         },
                                         last_pos: if right_node.element.is_nullable {
-                                            make_sets_union(
+                                            utils::make_sets_union(
                                                 &left_node.element.last_pos,
                                                 &right_node.element.last_pos,
                                             )
                                         } else {
                                             right_node.element.last_pos.clone()
                                         },
-                                        follow_pos: make_empty_set(),
+                                        follow_pos: utils::make_empty_set(),
                                     }
                                 } else {
                                     Params {
                                         is_nullable: left_node.element.is_nullable
                                             || right_node.element.is_nullable,
-                                        first_pos: make_sets_union(
+                                        first_pos: utils::make_sets_union(
                                             &left_node.element.first_pos,
                                             &right_node.element.first_pos,
                                         ),
-                                        last_pos: make_sets_union(
+                                        last_pos: utils::make_sets_union(
                                             &left_node.element.last_pos,
                                             &right_node.element.last_pos,
                                         ),
-                                        follow_pos: make_empty_set(),
+                                        follow_pos: utils::make_empty_set(),
                                     }
                                 };
 
@@ -310,8 +301,8 @@ fn make_params_tree(syntax_tree: &trees::BinTree<TreeNode>) -> trees::BinTree<Pa
 fn add_follow_pos(
     params_tree: &mut trees::BinTree<Params>,
     syntax_tree: &trees::BinTree<TreeNode>,
-    left_follow_pos: &Set<usize>,
-    right_follow_pos: &Set<usize>,
+    left_follow_pos: &types::Set<usize>,
+    right_follow_pos: &types::Set<usize>,
 ) {
     if syntax_tree.is_empty() {
         return;
@@ -343,8 +334,10 @@ fn add_follow_pos(
                     _ => unreachable!(),
                 };
 
-                cur_params_node.element.follow_pos =
-                    make_sets_union(&right_node.element.first_pos, &left_node.element.last_pos);
+                cur_params_node.element.follow_pos = utils::make_sets_union(
+                    &right_node.element.first_pos,
+                    &left_node.element.last_pos,
+                );
 
                 add_follow_pos(
                     &mut cur_params_node.left_tree,
@@ -374,9 +367,12 @@ fn add_follow_pos(
                     &cur_params_node.element.follow_pos,
                 );
             } else if *operator == ops::CLOSURE {
-                cur_params_node.element.follow_pos = make_sets_union(
+                cur_params_node.element.follow_pos = utils::make_sets_union(
                     &left_follow_pos,
-                    &make_sets_union(&left_node.element.first_pos, &left_node.element.last_pos),
+                    &utils::make_sets_union(
+                        &left_node.element.first_pos,
+                        &left_node.element.last_pos,
+                    ),
                 );
 
                 add_follow_pos(
@@ -390,27 +386,6 @@ fn add_follow_pos(
             }
         }
     };
-}
-
-fn make_empty_set<T>() -> Set<T>
-where
-    T: Eq + Hash + Ord,
-{
-    vec![].into_iter().collect::<Set<T>>()
-}
-
-fn make_set_from_vec<T>(v: Vec<T>) -> Set<T>
-where
-    T: Eq + Hash + Ord,
-{
-    v.into_iter().collect::<Set<T>>()
-}
-
-fn make_sets_union<T>(s1: &Set<T>, s2: &Set<T>) -> Set<T>
-where
-    T: Eq + Hash + Ord + Clone,
-{
-    s1.union(&s2).into_iter().cloned().collect::<Set<T>>()
 }
 
 mod tests {
@@ -447,7 +422,7 @@ mod tests {
                     Symbol::Operator(ops::CONCATENATION),
                 ]
                 .into_iter()
-                .collect::<Queue<_>>(),
+                .collect::<types::Queue<_>>(),
             ),
             (
                 "(a*b|cd)#",
@@ -464,7 +439,7 @@ mod tests {
                     Symbol::Operator(ops::CONCATENATION),
                 ]
                 .into_iter()
-                .collect::<Queue<_>>(),
+                .collect::<types::Queue<_>>(),
             ),
         ];
 
@@ -489,7 +464,7 @@ mod tests {
                 Symbol::Operator(ops::CONCATENATION),
             ]
             .into_iter()
-            .collect::<Queue<_>>(),
+            .collect::<types::Queue<_>>(),
             trees::BinTree::from(
                 TreeNode(10, Symbol::Operator(ops::CONCATENATION)),
                 trees::BinTree::from(
@@ -536,44 +511,44 @@ mod tests {
             trees::BinTree::from(
                 Params {
                     is_nullable: false,
-                    first_pos: make_set_from_vec(vec![1, 2, 5]),
-                    last_pos: make_set_from_vec(vec![5]),
-                    follow_pos: make_set_from_vec(vec![1, 2, 5]),
+                    first_pos: utils::make_set_from_vec(vec![1, 2, 5]),
+                    last_pos: utils::make_set_from_vec(vec![5]),
+                    follow_pos: utils::make_set_from_vec(vec![1, 2, 5]),
                 },
                 trees::BinTree::from(
                     Params {
                         is_nullable: true,
-                        first_pos: make_set_from_vec(vec![1, 2]),
-                        last_pos: make_set_from_vec(vec![1, 2]),
-                        follow_pos: make_set_from_vec(vec![1, 2, 5]),
+                        first_pos: utils::make_set_from_vec(vec![1, 2]),
+                        last_pos: utils::make_set_from_vec(vec![1, 2]),
+                        follow_pos: utils::make_set_from_vec(vec![1, 2, 5]),
                     },
                     trees::BinTree::from(
                         Params {
                             is_nullable: false,
-                            first_pos: make_set_from_vec(vec![1, 2]),
-                            last_pos: make_set_from_vec(vec![1, 2]),
-                            follow_pos: make_set_from_vec(vec![1, 2, 5]),
+                            first_pos: utils::make_set_from_vec(vec![1, 2]),
+                            last_pos: utils::make_set_from_vec(vec![1, 2]),
+                            follow_pos: utils::make_set_from_vec(vec![1, 2, 5]),
                         },
                         trees::BinTree::from_element(Params {
                             is_nullable: false,
-                            first_pos: make_set_from_vec(vec![1]),
-                            last_pos: make_set_from_vec(vec![1]),
-                            follow_pos: make_set_from_vec(vec![1, 2, 5]),
+                            first_pos: utils::make_set_from_vec(vec![1]),
+                            last_pos: utils::make_set_from_vec(vec![1]),
+                            follow_pos: utils::make_set_from_vec(vec![1, 2, 5]),
                         }),
                         trees::BinTree::from_element(Params {
                             is_nullable: false,
-                            first_pos: make_set_from_vec(vec![2]),
-                            last_pos: make_set_from_vec(vec![2]),
-                            follow_pos: make_set_from_vec(vec![1, 2, 5]),
+                            first_pos: utils::make_set_from_vec(vec![2]),
+                            last_pos: utils::make_set_from_vec(vec![2]),
+                            follow_pos: utils::make_set_from_vec(vec![1, 2, 5]),
                         }),
                     ),
                     trees::BinTree::Empty,
                 ),
                 trees::BinTree::from_element(Params {
                     is_nullable: false,
-                    first_pos: make_set_from_vec(vec![5]),
-                    last_pos: make_set_from_vec(vec![5]),
-                    follow_pos: make_empty_set(),
+                    first_pos: utils::make_set_from_vec(vec![5]),
+                    last_pos: utils::make_set_from_vec(vec![5]),
+                    follow_pos: utils::make_empty_set(),
                 }),
             ),
         )];
