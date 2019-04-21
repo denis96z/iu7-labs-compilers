@@ -6,7 +6,7 @@ use super::{errs, ops, vals};
 
 #[derive(PartialEq, Clone, Debug)]
 pub struct AbstractSyntaxTree {
-    pub(super) root: trees::BinTree<TreeNode>,
+    root: trees::BinTree<TreeNode>,
 }
 
 impl AbstractSyntaxTree {
@@ -16,7 +16,7 @@ impl AbstractSyntaxTree {
         }
     }
 
-    pub(super) fn root(&self) -> &trees::BinTree<TreeNode> {
+    pub fn root(&self) -> &trees::BinTree<TreeNode> {
         &self.root
     }
 
@@ -618,7 +618,7 @@ mod tests {
             let t = AbstractSyntaxTree::from_str(case.0).unwrap();
             let p = t.make_params_tree();
 
-            let actual = super::extract_values(&t.root, &p);
+            let actual = super::extract_values(t.root(), &p);
             let expected = case
                 .1
                 .iter()
