@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use crate::regexp::{ast, vals};
 use crate::{regexp, trees};
 
@@ -10,15 +12,15 @@ pub struct DFSM<'a> {
 }
 
 impl<'a> DFSM<'a> {
-    const EMPTY_STATE: State = State(0);
-
     fn from_regexp(r: &regexp::RegExp) -> Self {
         unimplemented!()
     }
 }
 
+type Set<T> = HashSet<T>;
+
 #[derive(PartialEq, Clone, Debug)]
-struct State(usize);
+struct State(Set<usize>);
 
 #[derive(PartialEq, Clone, Debug)]
 struct Transition {

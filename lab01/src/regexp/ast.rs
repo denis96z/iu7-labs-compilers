@@ -27,7 +27,7 @@ impl AbstractSyntaxTree {
 
     pub fn params_tree(&self) -> trees::BinTree<Params> {
         let mut t = make_params_tree(&self.root);
-        add_follow_pos(&self.root, &mut t);
+        add_follow_pos(&mut t, &self.root);
         return t;
     }
 }
@@ -307,8 +307,8 @@ fn make_params_tree(syntax_tree: &trees::BinTree<TreeNode>) -> trees::BinTree<Pa
 }
 
 fn add_follow_pos(
-    syntax_tree: &trees::BinTree<TreeNode>,
     params_tree: &mut trees::BinTree<Params>,
+    syntax_tree: &trees::BinTree<TreeNode>,
 ) {
     if syntax_tree.is_empty() {
         return;
@@ -342,10 +342,10 @@ fn add_follow_pos(
                     make_sets_union(&left_node.element.first_pos, &left_node.element.last_pos);
             }
 
-            add_follow_pos(&cur_syntax_node.left_tree, &mut cur_params_node.left_tree);
+            add_follow_pos(&mut cur_params_node.left_tree, &cur_syntax_node.left_tree);
 
             if operator.is_binary() {
-                add_follow_pos(&cur_syntax_node.right_tree, &mut cur_params_node.right_tree);
+                add_follow_pos(&mut cur_params_node.right_tree, &cur_syntax_node.right_tree);
             }
         }
 
