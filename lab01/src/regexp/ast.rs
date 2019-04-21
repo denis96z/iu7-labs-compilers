@@ -6,7 +6,7 @@ use super::{errs, ops, vals};
 
 #[derive(PartialEq, Clone, Debug)]
 pub struct AbstractSyntaxTree {
-    pub(self) root: trees::BinTree<TreeNode>,
+    pub(super) root: trees::BinTree<TreeNode>,
 }
 
 impl AbstractSyntaxTree {
@@ -14,6 +14,10 @@ impl AbstractSyntaxTree {
         AbstractSyntaxTree {
             root: trees::BinTree::new(),
         }
+    }
+
+    pub(super) fn root(&self) -> &trees::BinTree<TreeNode> {
+        &self.root
     }
 
     pub fn params_tree(&self) -> trees::BinTree<Params> {
@@ -386,7 +390,7 @@ fn add_follow_pos(
     };
 }
 
-fn extract_values<'a>(
+pub(super) fn extract_values<'a>(
     syntax_tree: &'a trees::BinTree<TreeNode>,
     params_tree: &'a trees::BinTree<Params>,
 ) -> Vec<(usize, &'a vals::Value, &'a types::Set<usize>)> {
@@ -452,8 +456,8 @@ mod tests {
                     Symbol::from_value_str(vals::Value::SPECIAL).unwrap(),
                     Symbol::Operator(ops::CONCATENATION),
                 ]
-                .into_iter()
-                .collect::<types::Queue<_>>(),
+                    .into_iter()
+                    .collect::<types::Queue<_>>(),
             ),
             (
                 "(a*b|cd)#",
@@ -469,8 +473,8 @@ mod tests {
                     Symbol::from_value_str(vals::Value::SPECIAL).unwrap(),
                     Symbol::Operator(ops::CONCATENATION),
                 ]
-                .into_iter()
-                .collect::<types::Queue<_>>(),
+                    .into_iter()
+                    .collect::<types::Queue<_>>(),
             ),
         ];
 
@@ -494,8 +498,8 @@ mod tests {
                 Symbol::from_value_str(vals::Value::SPECIAL).unwrap(),
                 Symbol::Operator(ops::CONCATENATION),
             ]
-            .into_iter()
-            .collect::<types::Queue<_>>(),
+                .into_iter()
+                .collect::<types::Queue<_>>(),
             trees::BinTree::from(
                 TreeNode(10, Symbol::Operator(ops::CONCATENATION)),
                 trees::BinTree::from(

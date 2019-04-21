@@ -1,6 +1,6 @@
 use std::str::FromStr;
 
-use crate::trees;
+use crate::{trees, types as ctypes};
 
 pub mod ast;
 pub mod errs;
@@ -26,6 +26,10 @@ impl RegExp {
 
     pub fn params_tree(&self) -> &trees::BinTree<ast::Params> {
         &self.params_tree
+    }
+
+    pub fn extract_values(&self) -> Vec<(usize, &vals::Value, &ctypes::Set<usize>)> {
+        ast::extract_values(&self.syntax_tree.root(), &self.params_tree)
     }
 }
 
