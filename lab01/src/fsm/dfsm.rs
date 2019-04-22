@@ -25,7 +25,7 @@ impl From<&regexp::RegExp> for DFSM {
                 )
             })
             .filter(|(flag, _)| *flag)
-            .map(|(flag, s)| s)
+            .map(|(_, s)| s)
             .collect::<Vec<_>>();
 
         let mut states_with_marks = Vec::new();
@@ -88,7 +88,7 @@ impl From<&regexp::RegExp> for DFSM {
 
         let special_index = values
             .iter()
-            .find(|(index, value, _)| value.symbol() == vals::Value::SPECIAL)
+            .find(|(_, value, _)| value.symbol() == vals::Value::SPECIAL)
             .map(|(index, _, _)| *index)
             .unwrap();
 
@@ -97,7 +97,7 @@ impl From<&regexp::RegExp> for DFSM {
         let final_states_indexes = states_with_marks
             .iter()
             .enumerate()
-            .filter(|(index, (_, positions))| positions.contains(&special_index))
+            .filter(|(_, (_, positions))| positions.contains(&special_index))
             .map(|(index, _)| index)
             .collect::<Vec<_>>();
 
