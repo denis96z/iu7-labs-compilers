@@ -28,8 +28,8 @@ impl From<&regexp::RegExp> for DFSM {
             .map(|(flag, s)| s)
             .collect::<Vec<_>>();
 
-        let mut states = Vec::new();
-        states.push((
+        let mut states_with_marks = Vec::new();
+        states_with_marks.push((
             false,
             match r.params_tree() {
                 trees::BinTree::NonEmpty(ref node) => node.element.first_pos.clone(),
@@ -39,15 +39,19 @@ impl From<&regexp::RegExp> for DFSM {
 
         let mut transitions = Vec::new();
         loop {
-            let unmarked_index = match states.iter().enumerate().find(|(_, (marked, _))| !*marked) {
+            let unmarked_index = match states_with_marks
+                .iter()
+                .enumerate()
+                .find(|(_, (marked, _))| !*marked)
+            {
                 Some((index, _)) => index,
                 _ => break,
             };
-            states[unmarked_index].0 = true;
+            states_with_marks[unmarked_index].0 = true;
 
             for symbol in &valid_symbols {
                 let mut union = types::Set::new();
-                for position in &states[unmarked_index].1 {
+                for position in &states_with_marks[unmarked_index].1 {
                     for (index, value, follow_pos) in &values {
                         if *index != *position || *value.symbol() != *symbol {
                             continue;
@@ -61,17 +65,17 @@ impl From<&regexp::RegExp> for DFSM {
                     continue;
                 }
 
-                let new_index = match states
+                let new_index = match states_with_marks
                     .iter()
                     .enumerate()
                     .find(|(_, (_, state))| *state == union)
                 {
                     Some((index, _)) => index,
-                    _ => states.len(),
+                    _ => states_with_marks.len(),
                 };
 
-                if new_index == states.len() {
-                    states.push((false, union));
+                if new_index == states_with_marks.len() {
+                    states_with_marks.push((false, union));
                 }
 
                 transitions.push(Transition {
@@ -88,19 +92,26 @@ impl From<&regexp::RegExp> for DFSM {
             .map(|(index, _, _)| *index)
             .unwrap();
 
-        let final_indexes = states
+        let initial_state_index = 0;
+
+        let final_states_indexes = states_with_marks
             .iter()
             .enumerate()
             .filter(|(index, (_, positions))| positions.contains(&special_index))
             .map(|(index, _)| index)
             .collect::<Vec<_>>();
 
+        let states = states_with_marks
+            .into_iter()
+            .map(|(_, state)| state)
+            .collect::<Vec<_>>();
+
         DFSM {
+            states,
             valid_symbols,
             transitions,
-            states: states.into_iter().map(|(_, state)| state).collect(),
-            initial_state_index: 0,
-            final_states_indexes: final_indexes,
+            initial_state_index,
+            final_states_indexes,
         }
     }
 }
