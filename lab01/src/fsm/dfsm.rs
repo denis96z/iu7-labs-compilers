@@ -16,20 +16,35 @@ impl From<&regexp::RegExp> for DFSM {
     fn from(r: &regexp::RegExp) -> Self {
         let values = r.extract_values();
 
-        let initial_state = match r.params_tree() {
-            trees::BinTree::NonEmpty(ref node) => node.element.first_pos.clone(),
-            _ => unreachable!(),
-        };
-
         let valid_symbols = (b'a'..=b'z') //TODO remove hardcode
             .map(|b| char::from(b).to_string())
+            .map(|s| {
+                (
+                    values
+                        .iter()
+                        .enumerate()
+                        .find(|(index, (_, v, _))| *v.symbol() == s)
+                        .map_or(None, |(index, (_, _, _))| Some(index)),
+                    s,
+                )
+            })
+            .filter(|(index, _)| index.is_some())
+            .map(|(index, s)| (index.unwrap(), s))
             .collect::<Vec<_>>();
 
         let mut states = Vec::new();
-        states.push((false, initial_state));
+        states.push((
+            false,
+            match r.params_tree() {
+                trees::BinTree::NonEmpty(ref node) => node.element.first_pos.clone(),
+                _ => unreachable!(),
+            },
+        ));
 
         let mut transitions = Vec::new();
         loop {
+            //            dbg!(&states);
+
             let unmarked_index = match states.iter().enumerate().find(|(_, (marked, _))| !*marked) {
                 Some((index, _)) => index,
                 _ => break,
@@ -71,7 +86,7 @@ impl From<&regexp::RegExp> for DFSM {
         }
 
         DFSM {
-            valid_symbols,
+            valid_symbols: Vec::new(), //valid_symbols, //TODO
             transitions,
             states: states.into_iter().map(|(_, state)| state).collect(),
             initial_state_index: 0,
@@ -96,8 +111,7 @@ mod tests {
 
     #[test]
     fn from_regexp() {
-        let r = regexp::RegExp::from_str("(a|b)*a").unwrap();
+        let r = regexp::RegExp::from_str("(a|b)*abb").unwrap();
         let m = DFSM::from(&r);
-        dbg!(&m);
     }
 }
