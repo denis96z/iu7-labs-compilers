@@ -1,6 +1,7 @@
+use core::borrow::BorrowMut;
+
 use crate::utils::make_sets_union;
 use crate::{regexp, trees, types};
-use core::borrow::BorrowMut;
 
 #[derive(Debug)]
 pub struct DFSM {
@@ -89,8 +90,9 @@ struct Transition {
 }
 
 mod tests {
-    use super::*;
     use std::str::FromStr;
+
+    use super::*;
 
     #[test]
     fn from_regexp() {
