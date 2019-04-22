@@ -148,13 +148,13 @@ fn make_tree(
 ) -> Result<trees::BinTree<TreeNode>, errs::ParseExpError> {
     let mut stack = types::Stack::new();
 
-    let mut index = 0usize;
+    let mut index = 0;
 
     for symbol in symbols.iter() {
-        index += 1;
-
         match symbol {
             Symbol::Value(_) => {
+                index += 1;
+
                 stack.push(trees::BinTree::from_element(TreeNode(
                     index,
                     symbol.clone(),
@@ -164,7 +164,7 @@ fn make_tree(
             Symbol::Operator(operator) => {
                 if operator.is_unary() {
                     let node = trees::BinTree::from(
-                        TreeNode(index, symbol.clone()),
+                        TreeNode(0, symbol.clone()),
                         stack.pop().unwrap(),
                         trees::BinTree::Empty,
                     );
@@ -173,11 +173,8 @@ fn make_tree(
                     let right_node = stack.pop().unwrap();
                     let left_node = stack.pop().unwrap();
 
-                    let node = trees::BinTree::from(
-                        TreeNode(index, symbol.clone()),
-                        left_node,
-                        right_node,
-                    );
+                    let node =
+                        trees::BinTree::from(TreeNode(0, symbol.clone()), left_node, right_node);
 
                     stack.push(node);
                 } else {
@@ -486,56 +483,46 @@ mod tests {
     #[test]
     fn make_tree() {
         let cases = vec![(
-            vec![
-                Symbol::from_value_str("a").unwrap(),
-                Symbol::Operator(ops::CLOSURE),
-                Symbol::from_value_str("b").unwrap(),
-                Symbol::Operator(ops::CONCATENATION),
-                Symbol::from_value_str("c").unwrap(),
-                Symbol::from_value_str("d").unwrap(),
-                Symbol::Operator(ops::CONCATENATION),
-                Symbol::Operator(ops::ALTERATION),
-                Symbol::from_value_str(vals::Value::SPECIAL).unwrap(),
-                Symbol::Operator(ops::CONCATENATION),
-            ]
-            .into_iter()
-            .collect::<types::Queue<_>>(),
+            "(a*b|cd)#",
             trees::BinTree::from(
-                TreeNode(10, Symbol::Operator(ops::CONCATENATION)),
+                TreeNode(0, Symbol::Operator(ops::CONCATENATION)),
                 trees::BinTree::from(
-                    TreeNode(8, Symbol::Operator(ops::ALTERATION)),
+                    TreeNode(0, Symbol::Operator(ops::ALTERATION)),
                     trees::BinTree::from(
-                        TreeNode(4, Symbol::Operator(ops::CONCATENATION)),
+                        TreeNode(0, Symbol::Operator(ops::CONCATENATION)),
                         trees::BinTree::from_element_with_left(
-                            TreeNode(2, Symbol::Operator(ops::CLOSURE)),
+                            TreeNode(0, Symbol::Operator(ops::CLOSURE)),
                             TreeNode(1, Symbol::from_value_str("a").unwrap()),
                         ),
                         trees::BinTree::from_element(TreeNode(
-                            3,
+                            2,
                             Symbol::from_value_str("b").unwrap(),
                         )),
                     ),
                     trees::BinTree::from(
-                        TreeNode(7, Symbol::Operator(ops::CONCATENATION)),
+                        TreeNode(0, Symbol::Operator(ops::CONCATENATION)),
                         trees::BinTree::from_element(TreeNode(
-                            5,
+                            3,
                             Symbol::from_value_str("c").unwrap(),
                         )),
                         trees::BinTree::from_element(TreeNode(
-                            6,
+                            4,
                             Symbol::from_value_str("d").unwrap(),
                         )),
                     ),
                 ),
                 trees::BinTree::from_element(TreeNode(
-                    9,
+                    5,
                     Symbol::from_value_str(vals::Value::SPECIAL).unwrap(),
                 )),
             ),
         )];
 
         for case in cases {
-            assert_eq!(super::make_tree(case.0).unwrap(), case.1);
+            assert_eq!(
+                super::make_tree(super::make_rpn(case.0).unwrap()).unwrap(),
+                case.1
+            );
         }
     }
 
@@ -546,43 +533,43 @@ mod tests {
             trees::BinTree::from(
                 Params {
                     is_nullable: false,
-                    first_pos: utils::make_set_from_vec(vec![1, 2, 5]),
-                    last_pos: utils::make_set_from_vec(vec![5]),
-                    follow_pos: utils::make_set_from_vec(vec![1, 2, 5]),
+                    first_pos: utils::make_set_from_vec(vec![1, 2, 3]),
+                    last_pos: utils::make_set_from_vec(vec![3]),
+                    follow_pos: utils::make_set_from_vec(vec![1, 2, 3]),
                 },
                 trees::BinTree::from(
                     Params {
                         is_nullable: true,
                         first_pos: utils::make_set_from_vec(vec![1, 2]),
                         last_pos: utils::make_set_from_vec(vec![1, 2]),
-                        follow_pos: utils::make_set_from_vec(vec![1, 2, 5]),
+                        follow_pos: utils::make_set_from_vec(vec![1, 2, 3]),
                     },
                     trees::BinTree::from(
                         Params {
                             is_nullable: false,
                             first_pos: utils::make_set_from_vec(vec![1, 2]),
                             last_pos: utils::make_set_from_vec(vec![1, 2]),
-                            follow_pos: utils::make_set_from_vec(vec![1, 2, 5]),
+                            follow_pos: utils::make_set_from_vec(vec![1, 2, 3]),
                         },
                         trees::BinTree::from_element(Params {
                             is_nullable: false,
                             first_pos: utils::make_set_from_vec(vec![1]),
                             last_pos: utils::make_set_from_vec(vec![1]),
-                            follow_pos: utils::make_set_from_vec(vec![1, 2, 5]),
+                            follow_pos: utils::make_set_from_vec(vec![1, 2, 3]),
                         }),
                         trees::BinTree::from_element(Params {
                             is_nullable: false,
                             first_pos: utils::make_set_from_vec(vec![2]),
                             last_pos: utils::make_set_from_vec(vec![2]),
-                            follow_pos: utils::make_set_from_vec(vec![1, 2, 5]),
+                            follow_pos: utils::make_set_from_vec(vec![1, 2, 3]),
                         }),
                     ),
                     trees::BinTree::Empty,
                 ),
                 trees::BinTree::from_element(Params {
                     is_nullable: false,
-                    first_pos: utils::make_set_from_vec(vec![5]),
-                    last_pos: utils::make_set_from_vec(vec![5]),
+                    first_pos: utils::make_set_from_vec(vec![3]),
+                    last_pos: utils::make_set_from_vec(vec![3]),
                     follow_pos: utils::make_empty_set(),
                 }),
             ),
@@ -603,14 +590,14 @@ mod tests {
                 (
                     1,
                     vals::Value::from_valid_str("a"),
-                    utils::make_set_from_vec(vec![1, 2, 5]),
+                    utils::make_set_from_vec(vec![1, 2, 3]),
                 ),
                 (
                     2,
                     vals::Value::from_valid_str("b"),
-                    utils::make_set_from_vec(vec![1, 2, 5]),
+                    utils::make_set_from_vec(vec![1, 2, 3]),
                 ),
-                (5, vals::Value::from_valid_str("#"), utils::make_empty_set()),
+                (3, vals::Value::from_valid_str("#"), utils::make_empty_set()),
             ],
         )];
 
