@@ -1,7 +1,10 @@
 use core::borrow::BorrowMut;
 
 use crate::utils::make_sets_union;
-use crate::{regexp, trees, types};
+use crate::{
+    regexp::{self, vals},
+    trees, types, utils,
+};
 
 #[derive(Debug)]
 pub struct DFSM {
@@ -16,20 +19,16 @@ impl From<&regexp::RegExp> for DFSM {
     fn from(r: &regexp::RegExp) -> Self {
         let values = r.extract_values();
 
-        let valid_symbols = (b'a'..=b'z') //TODO remove hardcode
+        let valid_symbols = (b'a'..=b'z') //TODO
             .map(|b| char::from(b).to_string())
             .map(|s| {
                 (
-                    values
-                        .iter()
-                        .enumerate()
-                        .find(|(index, (_, v, _))| *v.symbol() == s)
-                        .map_or(None, |(index, (_, _, _))| Some(index)),
+                    values.iter().find(|(_, v, _)| *v.symbol() == s).is_some(),
                     s,
                 )
             })
-            .filter(|(index, _)| index.is_some())
-            .map(|(index, s)| (index.unwrap(), s))
+            .filter(|(flag, _)| *flag)
+            .map(|(flag, s)| s)
             .collect::<Vec<_>>();
 
         let mut states = Vec::new();
@@ -43,21 +42,21 @@ impl From<&regexp::RegExp> for DFSM {
 
         let mut transitions = Vec::new();
         loop {
-            //            dbg!(&states);
-
             let unmarked_index = match states.iter().enumerate().find(|(_, (marked, _))| !*marked) {
                 Some((index, _)) => index,
                 _ => break,
             };
             states[unmarked_index].0 = true;
 
-            for value in &values {
+            for symbol in &valid_symbols {
                 let mut union = types::Set::new();
-                for state in states.iter() {
-                    for p in state.1.iter() {
-                        if *p == value.0 {
-                            union = make_sets_union(&union, value.2);
+                for position in &states[unmarked_index].1 {
+                    for (index, value, follow_pos) in &values {
+                        if *index != *position || *value.symbol() != *symbol {
+                            continue;
                         }
+
+                        union = utils::make_sets_union(&union, *follow_pos);
                     }
                 }
 
@@ -73,6 +72,7 @@ impl From<&regexp::RegExp> for DFSM {
                     Some((index, _)) => index,
                     _ => states.len(),
                 };
+
                 if new_index == states.len() {
                     states.push((false, union));
                 }
@@ -80,17 +80,30 @@ impl From<&regexp::RegExp> for DFSM {
                 transitions.push(Transition {
                     initial_state_index: unmarked_index,
                     final_state_index: new_index,
-                    symbol: value.1.symbol().to_string(), //TODO optimize
+                    symbol: symbol.to_string(),
                 });
             }
         }
 
+        let special_index = values
+            .iter()
+            .find(|(index, value, _)| value.symbol() == vals::Value::SPECIAL)
+            .map(|(index, _, _)| *index)
+            .unwrap();
+
+        let final_indexes = states
+            .iter()
+            .enumerate()
+            .filter(|(index, (_, positions))| positions.contains(&special_index))
+            .map(|(index, _)| index)
+            .collect::<Vec<_>>();
+
         DFSM {
-            valid_symbols: Vec::new(), //valid_symbols, //TODO
+            valid_symbols,
             transitions,
             states: states.into_iter().map(|(_, state)| state).collect(),
             initial_state_index: 0,
-            final_states_indexes: vec![],
+            final_states_indexes: final_indexes,
         }
     }
 }
@@ -113,5 +126,6 @@ mod tests {
     fn from_regexp() {
         let r = regexp::RegExp::from_str("(a|b)*abb").unwrap();
         let m = DFSM::from(&r);
+        dbg!(&m);
     }
 }
