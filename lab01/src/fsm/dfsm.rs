@@ -1,6 +1,3 @@
-use core::borrow::BorrowMut;
-
-use crate::utils::make_sets_union;
 use crate::{
     regexp::{self, vals},
     trees, types, utils,
