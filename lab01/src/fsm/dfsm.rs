@@ -3,7 +3,7 @@ use crate::{
     trees, types, utils,
 };
 
-#[derive(Debug)]
+#[derive(PartialEq, Debug)]
 pub struct DFSM {
     states: Vec<State>,
     valid_symbols: Vec<types::Symbol>,
@@ -101,10 +101,31 @@ impl From<&regexp::RegExp> for DFSM {
             .map(|(index, _)| index)
             .collect::<Vec<_>>();
 
-        let states = states_with_marks
+        let mut states = states_with_marks
             .into_iter()
             .map(|(_, state)| state)
             .collect::<Vec<_>>();
+
+        let err_state_index = values.len() + 1;
+        states.push(utils::make_set_from_vec(vec![err_state_index]));
+
+        for symbol in &valid_symbols {
+            for index in 0..(states.len() - 1) {
+                if transitions
+                    .iter()
+                    .find(|transition| {
+                        transition.symbol == *symbol && transition.initial_state_index == index
+                    })
+                    .is_none()
+                {
+                    transitions.push(Transition {
+                        initial_state_index: index,
+                        final_state_index: err_state_index,
+                        symbol: symbol.clone(),
+                    })
+                }
+            }
+        }
 
         DFSM {
             states,
