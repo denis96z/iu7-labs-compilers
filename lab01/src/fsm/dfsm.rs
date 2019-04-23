@@ -16,17 +16,14 @@ impl From<&regexp::RegExp> for DFSM {
     fn from(r: &regexp::RegExp) -> Self {
         let values = r.extract_values();
 
-        let valid_symbols = (b'a'..=b'z') //TODO
-            .map(|b| char::from(b).to_string())
-            .map(|s| {
-                (
-                    values.iter().find(|(_, v, _)| *v.symbol() == s).is_some(),
-                    s,
-                )
-            })
-            .filter(|(flag, _)| *flag)
-            .map(|(_, s)| s)
+        let mut valid_symbols = values
+            .iter()
+            .filter(|(_, value, _)| value.symbol() != vals::Value::SPECIAL)
+            .map(|(_, value, _)| value.symbol().clone())
+            .collect::<types::Set<_>>()
+            .into_iter()
             .collect::<Vec<_>>();
+        valid_symbols.sort();
 
         let mut states_with_marks = Vec::new();
         states_with_marks.push((
