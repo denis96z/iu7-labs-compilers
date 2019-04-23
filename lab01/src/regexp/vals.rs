@@ -70,8 +70,10 @@ pub fn is_value(s: &str) -> bool {
 }
 
 mod tests {
+    #[allow(unused_imports)]
     use crate::regexp::ops;
 
+    #[allow(unused_imports)]
     use super::*;
 
     #[test]

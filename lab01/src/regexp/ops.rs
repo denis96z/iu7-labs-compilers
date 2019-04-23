@@ -166,6 +166,7 @@ pub fn is_closing_parenthesis(s: &str) -> bool {
 }
 
 mod tests {
+    #[allow(unused_imports)]
     use super::*;
 
     #[test]

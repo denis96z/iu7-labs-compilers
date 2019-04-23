@@ -421,15 +421,17 @@ pub(super) fn extract_values<'a>(
 }
 
 mod tests {
-    use super::*;
-
     #[test]
     fn tree_new() {
+        use super::*;
+
         AbstractSyntaxTree::new();
     }
 
     #[test]
     fn tree_from_str() {
+        use super::*;
+
         let cases = vec!["((a|b)*abb)#"];
 
         for case in cases {
@@ -439,6 +441,8 @@ mod tests {
 
     #[test]
     fn make_rpn() {
+        use super::*;
+
         let cases = vec![
             (
                 "((a|b)c|d)#",
@@ -482,6 +486,8 @@ mod tests {
 
     #[test]
     fn make_tree() {
+        use super::*;
+
         let cases = vec![(
             "(a*b|cd)#",
             trees::BinTree::from(
@@ -528,6 +534,8 @@ mod tests {
 
     #[test]
     fn make_params_tree() {
+        use super::*;
+
         let cases = vec![(
             "((a|b)*)#",
             trees::BinTree::from(
@@ -584,6 +592,8 @@ mod tests {
 
     #[test]
     fn extract_values() {
+        use super::*;
+
         let cases = vec![(
             "((a|b)*)#",
             vec![

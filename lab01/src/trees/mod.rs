@@ -71,6 +71,7 @@ impl<T> TreeNode<T> {
 }
 
 mod tests {
+    #[allow(unused_imports)]
     use super::*;
 
     #[test]

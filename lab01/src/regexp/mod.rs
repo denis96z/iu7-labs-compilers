@@ -51,6 +51,9 @@ fn augment_regexp(s: &str) -> String {
 }
 
 mod tests {
+    #[allow(unused_imports)]
+    use super::*;
+
     #[test]
     fn augment_regexp() {
         assert_eq!(super::augment_regexp("abc"), "(abc)#");

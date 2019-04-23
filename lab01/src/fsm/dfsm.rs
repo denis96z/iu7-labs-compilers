@@ -147,11 +147,14 @@ struct Transition {
 }
 
 mod tests {
+    #[allow(unused_imports)]
+    use std::str::FromStr;
+
+    #[allow(unused_imports)]
+    use super::*;
+
     #[test]
     fn from_regexp() {
-        use super::*;
-        use std::str::FromStr;
-
         let cases = vec![(
             "(a|b)*abb",
             DFSM {
