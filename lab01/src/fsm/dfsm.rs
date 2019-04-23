@@ -147,14 +147,71 @@ struct Transition {
 }
 
 mod tests {
-    use std::str::FromStr;
-
-    use super::*;
-
     #[test]
     fn from_regexp() {
-        let r = regexp::RegExp::from_str("(a|b)*abb").unwrap();
-        let m = DFSM::from(&r);
-        dbg!(&m);
+        use super::*;
+        use std::str::FromStr;
+
+        let cases = vec![(
+            "(a|b)*abb",
+            DFSM {
+                states: vec![
+                    utils::make_set_from_vec(vec![1, 2, 3]),
+                    utils::make_set_from_vec(vec![1, 2, 3, 4]),
+                    utils::make_set_from_vec(vec![1, 2, 3, 5]),
+                    utils::make_set_from_vec(vec![1, 2, 3, 6]),
+                    utils::make_set_from_vec(vec![7]),
+                ],
+                valid_symbols: vec!["a".to_string(), "b".to_string()],
+                transitions: vec![
+                    Transition {
+                        initial_state_index: 0,
+                        final_state_index: 1,
+                        symbol: "a".to_string(),
+                    },
+                    Transition {
+                        initial_state_index: 0,
+                        final_state_index: 0,
+                        symbol: "b".to_string(),
+                    },
+                    Transition {
+                        initial_state_index: 1,
+                        final_state_index: 1,
+                        symbol: "a".to_string(),
+                    },
+                    Transition {
+                        initial_state_index: 1,
+                        final_state_index: 2,
+                        symbol: "b".to_string(),
+                    },
+                    Transition {
+                        initial_state_index: 2,
+                        final_state_index: 1,
+                        symbol: "a".to_string(),
+                    },
+                    Transition {
+                        initial_state_index: 2,
+                        final_state_index: 3,
+                        symbol: "b".to_string(),
+                    },
+                    Transition {
+                        initial_state_index: 3,
+                        final_state_index: 1,
+                        symbol: "a".to_string(),
+                    },
+                    Transition {
+                        initial_state_index: 3,
+                        final_state_index: 0,
+                        symbol: "b".to_string(),
+                    },
+                ],
+                initial_state_index: 0,
+                final_states_indexes: vec![3],
+            },
+        )];
+
+        for (r, m) in cases {
+            assert_eq!(DFSM::from(&regexp::RegExp::from_str(r).unwrap()), m);
+        }
     }
 }
