@@ -5,7 +5,7 @@ use crate::{
 
 #[derive(PartialEq, Debug)]
 pub struct DFSM {
-    states: Vec<State>,
+    states: Vec<usize>,
     valid_symbols: Vec<types::Symbol>,
     transitions: Vec<Transition>,
     initial_state_index: usize,
@@ -98,13 +98,8 @@ impl From<&regexp::RegExp> for DFSM {
             .map(|(index, _)| index)
             .collect::<Vec<_>>();
 
-        let mut states = states_with_marks
-            .into_iter()
-            .map(|(_, state)| state)
-            .collect::<Vec<_>>();
-
-        let err_state_index = values.len() + 1;
-        states.push(utils::make_set_from_vec(vec![err_state_index]));
+        let states = (0..=states_with_marks.len()).collect::<Vec<_>>();
+        let err_state_index = states.last().unwrap();
 
         for symbol in &valid_symbols {
             for index in 0..(states.len() - 1) {
@@ -117,7 +112,7 @@ impl From<&regexp::RegExp> for DFSM {
                 {
                     transitions.push(Transition {
                         initial_state_index: index,
-                        final_state_index: err_state_index,
+                        final_state_index: *err_state_index,
                         symbol: symbol.clone(),
                     })
                 }
@@ -155,13 +150,7 @@ mod tests {
         let cases = vec![(
             "(a|b)*abb",
             DFSM {
-                states: vec![
-                    utils::make_set_from_vec(vec![1, 2, 3]),
-                    utils::make_set_from_vec(vec![1, 2, 3, 4]),
-                    utils::make_set_from_vec(vec![1, 2, 3, 5]),
-                    utils::make_set_from_vec(vec![1, 2, 3, 6]),
-                    utils::make_set_from_vec(vec![7]),
-                ],
+                states: (0..=4).collect::<Vec<_>>(),
                 valid_symbols: vec!["a".to_string(), "b".to_string()],
                 transitions: vec![
                     Transition {
