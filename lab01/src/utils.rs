@@ -30,3 +30,29 @@ pub fn merge_vectors<T>(mut v1: Vec<T>, mut v2: Vec<T>) -> Vec<T> {
     v1.append(&mut v2);
     return v1;
 }
+
+pub fn find_diff<T>(v1: &[T], v2: &[T]) -> Vec<T>
+where
+    T: Eq + Copy,
+{
+    let mut result = Vec::new();
+    for item in v1 {
+        if !v2.contains(item) {
+            result.push(*item);
+        }
+    }
+    result
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn find_diff() {
+        let v1 = vec![1, 2, 3];
+        let v2 = vec![1, 2];
+
+        assert_eq!(super::find_diff(&v1, &v2), vec![3]);
+    }
+}
