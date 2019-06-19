@@ -1,0 +1,10 @@
+S A B C
+a c d
+6
+S->A B C d
+A->a
+A->ε
+B->A C
+C->c
+C->ε
+S

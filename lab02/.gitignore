@@ -1,0 +1,9 @@
+### IDE ###
+.idea
+
+### python ###
+/venv/
+__pycache__
+
+### tests ###
+/tests/*_fixed
