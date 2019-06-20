@@ -1,11 +1,17 @@
 S A B C
 a c d
-7
+13
 S->A B C d
 A->a
-A->ε
+B->A C
 C->c
-C->ε
-B->a C
-B->ε C
+S->A B d
+S->B C d
+S->A C d
+S->B d
+S->A d
+S->C d
+S->d
+B->A
+B->C
 S

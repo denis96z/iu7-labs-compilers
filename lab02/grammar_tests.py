@@ -71,7 +71,7 @@ class TestGrammar:
     ])
     def test_eps_remove(self, src_file: str, dest_file: str,
                         exp_file: str) -> None:
-        self._check_operation(getname(Grammar.remove_left_recursion), src_file,
+        self._check_operation(getname(Grammar.remove_eps_rules), src_file,
                               dest_file, exp_file)
 
     @staticmethod
