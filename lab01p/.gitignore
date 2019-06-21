@@ -1,0 +1,15 @@
+### IDE ###
+.idea
+
+### python ###
+venv
+__pycache__
+
+### output ###
+min
+min_fa
+origin
+original_fa
+test_builder
+regexp_tree
+*.pdf
