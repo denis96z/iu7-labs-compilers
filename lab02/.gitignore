@@ -1,0 +1,8 @@
+### build ###
+/build/
+
+### tests ###
+/tests/
+
+### tools ###
+/tools/
