@@ -29,7 +29,7 @@ class Parser:
         return None
 
     def _log_expr(self):
-        tree = ParseTree('log expr')
+        tree = ParseTree('>')
         log_node = self._log_mon()
         if log_node is not None:
             tree.add_child(log_node)
@@ -43,7 +43,7 @@ class Parser:
     def _log_expr_(self):
         if self._out_of_range():
             return None
-        tree = ParseTree('log expr')
+        tree = ParseTree('expr')
         if self.string[self.index] == '!':
             self.index += 1
             tree.add_child(ParseTree('!'))
@@ -57,7 +57,7 @@ class Parser:
         return None
 
     def _log_mon(self) -> Any:
-        tree = ParseTree('log mon')
+        tree = ParseTree('>')
         sec_expr_node = self._sec_expr()
         if sec_expr_node:
             tree.add_child(sec_expr_node)
@@ -71,7 +71,7 @@ class Parser:
     def _log_mon_(self) -> Any:
         if self._out_of_range():
             return None
-        tree = ParseTree('log mon')
+        tree = ParseTree('>')
         if self.string[self.index] == '&':
             self.index += 1
             tree.add_child(ParseTree('&'))
@@ -114,7 +114,7 @@ class Parser:
         return None
 
     def _log_value(self) -> Any:
-        tree = ParseTree('log value')
+        tree = ParseTree('value')
         if self.string[self.index:self.index + 4] == 'true':
             self.index += 4
             tree.add_child(ParseTree('true'))
